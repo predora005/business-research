@@ -21,27 +21,10 @@ if __name__ == '__main__':
     df = get_basic_infos(codes)
     print(df)
     
-    # DataFrameから単位を削る。
-    df2 = trim_unit_from_dataframe(df)
+    df2 = reshape_basic_info(df)
     print(df2)
-    print(df2.dtypes)
     
-    # 統計量(平均値と標準偏差)を算出する。
-    statistics = pd.DataFrame({'平均値': df2.mean(), '標準偏差': df2.std()})
-    print(statistics)
-    
-    # 各銘柄のデータと統計量を結合する。
-    df3 = df2.append(statistics.T)
-    
-    # 出来高と時価総額の単位を変換する。
-    df3['出来高'] = df3['出来高'] / 1.0e+3
-    df3['時価総額'] = df3['時価総額'] / 1.0e+12
-    df3 = df3.rename(columns={'出来高': '出来高(千株)', '時価総額': '時価総額(兆円)'})
-    
-    # 不要な列を削除する。
-    df3 = df3.drop(columns=['始値', '高値', '安値', '単元株数', '発行済株数', '購入金額'])
-    print(df3)
-    
+
     #jre_dict = get_basic_info(9020)
     #jrw_dict = get_basic_info(9022)
     #jrc_dict = get_basic_info(9021)

@@ -36,8 +36,7 @@ def get_basic_infos(codes):
         
         # 1秒ディレイ
         time.sleep(1)
-    
-    
+
     return basic_df
 
 ##############################
@@ -151,3 +150,41 @@ def trim_unit_from_dataframe(df):
         new_df[col] = df[col].map(lambda v : trim_unit(v))
 
     return new_df
+
+##############################
+# 複数銘柄の基本情報を整形する
+##############################
+def reshape_basic_info(df):
+    """ 複数銘柄の基本情報を整形する。
+    
+    Args:
+        df  (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+
+    Returns:
+        new_df  : 整形後のDataFrame
+    """
+    
+    # DataFrameから単位を削る。
+    new_df = trim_unit_from_dataframe(df)
+
+    # 統計量(平均値と標準偏差)を算出する。
+    statistics = pd.DataFrame({'平均値': new_df.mean(), '標準偏差': new_df.std()})
+
+    # 各銘柄のデータと統計量を結合する。
+    new_df = new_df.append(statistics.T)
+    
+    # 出来高,時価総額,発行済株数の単位を変換する。
+    new_df['出来高'] = new_df['出来高'] / 1.0e+3
+    new_df['時価総額'] = new_df['時価総額'] / 1.0e+12
+    new_df['発行済株数'] = new_df['発行済株数'] / 1.0e+6
+    new_df = new_df.rename(columns={
+        '出来高'        : '出来高(千株)', 
+        '時価総額'      : '時価総額(兆円)',
+        '発行済株数'    : '発行済株数(百万株)', 
+    })
+    
+    # 不要な列を削除する。
+    new_df = new_df.drop(columns=['始値', '高値', '安値', '単元株数', '購入金額'])
+    
+    return new_df
+    
