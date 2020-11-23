@@ -27,9 +27,6 @@ def get_financial_infos(codes):
         code = codes[name]
         df = get_financial_info(code)
         
-        # 決算情報から不要データを削る。
-        df = trim_unnecessary_from_dataframe(df)
-        
         # 名称を追加し、MultiIndexにする。
         df['名称'] = name
         df = df.set_index('名称', append=True)
@@ -67,8 +64,39 @@ def get_financial_info(code):
     # BeautifulSoupのHTMLパーサーを生成
     soup = BeautifulSoup(html.content, "html.parser")
     
+    # 決算情報テーブルを取得する
+    fin_df1 = get_financial_table(soup, '決算情報')
+        
+    # 決算情報から不要データを削る。
+    fin_df1 = trim_unnecessary_from_dataframe(fin_df1)
+        
+    # 財務情報テーブルを取得する
+    fin_df2 = get_financial_table(soup, '財務情報')
+    
+    # 財務情報から不要データを削る。
+    fin_df2 = trim_unnecessary_from_dataframe(fin_df2)
+    
+    # DataFrameを結合する    
+    df = pd.concat([fin_df1, fin_df2], axis=1)
+    
+    return df
+    
+##############################
+# 指定した名称の<table>要素のデータを抽出する
+##############################
+def get_financial_table(bs, table_name):
+    """ 指定した名称の<table>要素のデータを抽出する
+    
+    Args:
+        bs          (BeautifulSoup) : 抽出対象HTMLのBeautifulSoupオブジェクト
+        table_name  (string)        : 抽出対象テーブルの名称
+
+    Returns:
+        DataFrame  :  <table>要素を格納したDataFrame
+    """
+    
     # 全<table>要素を抽出
-    table_all = soup.find_all('table')
+    table_all = bs.find_all('table')
     
     # 決算情報の<table>要素を検索する。
     fin_table1 = None
@@ -80,7 +108,7 @@ def get_financial_info(code):
             continue
         
         # <caption>要素の文字列が目的のものと一致したら終了
-        if caption.text == '決算情報':
+        if caption.text == table_name:
             fin_table1 = table
             break
     
@@ -109,13 +137,13 @@ def get_financial_info(code):
         
         # 1行のデータを格納したリストを、リストに格納
         rows.append(row)
-    
+        
     # DataFrameを生成する
     df = pd.DataFrame(rows, columns=headers)
     df = df.set_index(headers[0])   # 先頭の列(決算期)をインデックスに指定する
     
     return df
-    
+        
 ##############################
 # DataFrameから不要なデータを削る。
 ##############################
