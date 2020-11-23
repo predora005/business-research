@@ -2,22 +2,56 @@
 
 import requests
 from bs4 import BeautifulSoup
+import time
+import pandas as pd
+
+##############################
+# 指定した複数銘柄の基本情報を取得する
+##############################
+def get_basic_infos(codes):
+    """ 指定した複数銘柄の基本情報を取得する。
+    
+    Args:
+        codes   (dict)  : 証券コードと名称のディクショナリ
+                          (ex){'JR東日本':9020, 'JR西日本': 9021}
+    Returns:
+        string  : 取得した情報を格納したディクショナリ
+    """
+    
+    basic_df = None
+    for name in codes.keys():
+        
+        code = codes[name]
+        basic_info = get_basic_info(code)
+        
+        # ディクショナリからSeriesを生成
+        sr = pd.Series(basic_info.values(), index=basic_info.keys(), name=name)
+        print(sr)
+        
+        if basic_df is None:
+            basic_df = pd.DataFrame([sr])
+        else:
+            basic_df = basic_df.append(sr)
+        
+        # 1秒ディレイ
+        time.sleep(1)
+        
+    return basic_df
 
 ##############################
 # 指定した銘柄の基本情報を取得する
 ##############################
 def get_basic_info(code):
-    """ URLを取得する。
+    """ 指定した銘柄の基本情報を取得する。
     
     Args:
         code    (int) : 証券コード
-        code    (int) : 証券コード
 
     Returns:
-        string: URL
+        dict: 取得した情報
     """
     # 指定URLのHTMLデータを取得
-    url = "https://minkabu.jp/stock/9020"
+    url = "https://minkabu.jp/stock/{0:d}".format(code)
     html = requests.get(url)
     
     # BeautifulSoupのHTMLパーサーを生成
@@ -46,5 +80,8 @@ def get_basic_info(code):
         
         # ディクショナリに格納
         basic_info[key] = value
-
+        
     return basic_info
+    
+
+    

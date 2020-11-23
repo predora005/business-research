@@ -10,7 +10,23 @@ from stinfo import *
 ##################################################
 if __name__ == '__main__':
     
-    basic_info = get_basic_info(9020)
+    codes = {
+        'JR東日本'  : 9020, 
+        'JR西日本'  : 9022, 
+        'JR東海'    : 9021, 
+        '東急'      : 9005, 
+        '近鉄GHD'   : 9041,
+    }
     
-    print(basic_info)
+    df = get_basic_infos(codes)
+    print(df)
+    
+    #for code in codes:
+    #    basic_info = get_basic_info(code)
+    #    print(basic_info)
+    #    
+    #    # 1秒ディレイ
+    #    time.sleep(1)
+        
+    
     
