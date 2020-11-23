@@ -17,7 +17,7 @@ def get_basic_infos(codes):
         codes   (dict)  : 証券コードと名称のディクショナリ
                           (ex){'JR東日本':9020, 'JR西日本': 9021}
     Returns:
-        string  : 取得した情報を格納したディクショナリ
+        dict    : 取得した情報を格納したディクショナリ
     """
     
     basic_df = None
@@ -94,7 +94,7 @@ def trim_unit_from_dataframe(df):
         df  (DataFrame) : データフレーム
 
     Returns:
-        new_df  : 単位削除後のDataFrame
+        DataFrame   : 単位削除後のDataFrame
     """
     
     # 単位を削除する関数
@@ -161,7 +161,7 @@ def reshape_basic_info(df):
         df  (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
 
     Returns:
-        new_df  : 整形後のDataFrame
+        DataFrame   : 整形後のDataFrame
     """
     
     # DataFrameから単位を削る。
