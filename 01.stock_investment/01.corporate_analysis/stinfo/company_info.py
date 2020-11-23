@@ -17,7 +17,7 @@ def get_basic_infos(codes):
         codes   (dict)  : 証券コードと名称のディクショナリ
                           (ex){'JR東日本':9020, 'JR西日本': 9021}
     Returns:
-        dict    : 取得した情報を格納したディクショナリ
+        DataFrame   : 取得した情報を格納したDataFrame
     """
     
     basic_df = None
@@ -36,7 +36,7 @@ def get_basic_infos(codes):
         
         # 1秒ディレイ
         time.sleep(1)
-
+    
     return basic_df
 
 ##############################

@@ -8,6 +8,46 @@ import pandas as pd
 import re
 
 ##############################
+# 指定した複数銘柄の決算情報を取得する
+##############################
+def get_financial_infos(codes):
+    """ 指定した複数銘柄の決算情報を取得する。
+    
+    Args:
+        codes   (dict)  : 証券コードと名称のディクショナリ
+                          (ex){'JR東日本':9020, 'JR西日本': 9021}
+    Returns:
+        DataFrame   : 取得した情報を格納したDataFrame
+    """
+    
+    whole_df = None
+    for name in codes.keys():
+        
+        # 指定した証券コードの決算情報を取得する。
+        code = codes[name]
+        df = get_financial_info(code)
+        
+        # 決算情報から不要データを削る。
+        df = trim_unnecessary_from_dataframe(df)
+        
+        # 名称を追加し、MultiIndexにする。
+        df['名称'] = name
+        df = df.set_index('名称', append=True)
+        
+        if whole_df is None:
+            whole_df = df
+        else:
+            whole_df = whole_df.append(df)
+        
+        # 1秒ディレイ
+        time.sleep(1)
+    
+    # indexを入れ替える
+    whole_df = whole_df.swaplevel('名称', '決算期').sort_index()
+    
+    return whole_df
+    
+##############################
 # 指定した銘柄の決算情報を取得する
 ##############################
 def get_financial_info(code):
@@ -40,7 +80,6 @@ def get_financial_info(code):
             continue
         
         # <caption>要素の文字列が目的のものと一致したら終了
-        print(caption.text)
         if caption.text == '決算情報':
             fin_table1 = table
             break
