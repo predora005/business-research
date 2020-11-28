@@ -207,18 +207,16 @@ def visualize_basic_info(df, columns):
     mpl.font_manager._rebuild()    # キャッシュの削除
     plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
     
-    # Figureを設定
+    # FigureとAxesを取得
     fig = plt.figure()
     ax = fig.add_subplot(111)
     
-    # 銘柄の数
-    num_data = df.shape[0]
-    
-    # 可視化する列の数
-    num_column = len(columns)
+    # データ数を取得
+    num_data = df.shape[0]      # 銘柄の数
+    num_column = len(columns)   # 可視化する列の数
     
     # 棒グラフを横並びで表示するためのパラメータ
-    width = 0.2                 # 棒グラフの幅
+    width = 0.8 / num_column    # 棒グラフの幅
     xpos = np.arange(num_data)  # X軸上の位置
     
     # 指定した列数分ループ
@@ -236,9 +234,14 @@ def visualize_basic_info(df, columns):
     offset = width / 2 * (num_column - 1)
     ax.set(xticks=xpos + offset, xticklabels=labels)
     
+    # 補助線を描画する
+    ax.grid(axis='y', color='gray', ls='--')
+    
     # 凡例を表示する
     ax.legend(columns)
-
+    
     # グラフを表示する
     fig.show()
     fig.savefig("basic_info.png")
+    
+    

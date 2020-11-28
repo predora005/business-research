@@ -26,8 +26,9 @@ if __name__ == '__main__':
     print(df2)
     
     # 複数銘柄の基本情報を可視化する
-    #visualize_basic_info(df2, ['PER(調整後)'])
-    visualize_basic_info(df2, ['PSR', 'PBR'])
+    df = df2.drop(index='標準偏差')
+    #visualize_basic_info(df, ['PER(調整後)'])
+    visualize_basic_info(df, ['PSR', 'PBR'])
 
     #jre_dict = get_basic_info(9020)
     #jrw_dict = get_basic_info(9022)
@@ -43,3 +44,30 @@ if __name__ == '__main__':
     #
     #df = pd.DataFrame([jre_sr, jrw_sr, jrc_sr, tokyu_sr, kintetsu_sr])
     
+    ## '標準偏差'の列を削除
+    #df = df2.drop(index='標準偏差')
+    #
+    ## FigureとAxesを取得
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111)
+    #
+    #per = df['PER(調整後)']     # PER
+    #xpos = np.arange(len(per))  # X軸上の位置
+    #
+    ## 棒グラフを作成
+    #ax.bar(xpos, per)
+    #
+    ## X軸に銘柄名を表示
+    #ax.set(xticks=xpos, xticklabels=df.index)
+    #
+    ## 補助線を描画する
+    #ax.grid(axis='y', color='gray', ls='--')
+    #
+    ## 凡例を表示
+    #ax.legend(['PER(調整後)'])
+    #
+    ## グラフを表示
+    #fig.show()
+    #fig.savefig('test.png')
+
+
