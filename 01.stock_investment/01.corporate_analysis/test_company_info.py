@@ -21,9 +21,13 @@ if __name__ == '__main__':
     df = get_basic_infos(codes)
     print(df)
     
+    # 複数銘柄の基本情報を整形する
     df2 = reshape_basic_info(df)
     print(df2)
     
+    # 複数銘柄の基本情報を可視化する
+    #visualize_basic_info(df2, ['PER(調整後)'])
+    visualize_basic_info(df2, ['PSR', 'PBR'])
 
     #jre_dict = get_basic_info(9020)
     #jrw_dict = get_basic_info(9022)

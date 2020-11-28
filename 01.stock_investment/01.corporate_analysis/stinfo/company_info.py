@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
 
 ##############################
 # 指定した複数銘柄の基本情報を取得する
@@ -188,3 +189,56 @@ def reshape_basic_info(df):
     
     return new_df
     
+##############################
+# 複数銘柄の基本情報を可視化する
+##############################
+def visualize_basic_info(df, columns):
+    """ 複数銘柄の基本情報を整形する。
+    
+    Args:
+        df  (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+
+    Returns:
+    """
+    
+    # 日本語フォントの設定
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    mpl.font_manager._rebuild()    # キャッシュの削除
+    plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
+    
+    # Figureを設定
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    
+    # 銘柄の数
+    num_data = df.shape[0]
+    
+    # 可視化する列の数
+    num_column = len(columns)
+    
+    # 棒グラフを横並びで表示するためのパラメータ
+    width = 0.2                 # 棒グラフの幅
+    xpos = np.arange(num_data)  # X軸上の位置
+    
+    # 指定した列数分ループ
+    for i in range(num_column):
+        
+        col = columns[i]
+        x = xpos + width * i
+        y = df[col]
+        
+        # 棒グラフを表示
+        ax.bar(x, y, width=width, align='center')
+        
+    # X軸の目盛位置を調整し、銘柄名を表示する
+    labels = df.index.values
+    offset = width / 2 * (num_column - 1)
+    ax.set(xticks=xpos + offset, xticklabels=labels)
+    
+    # 凡例を表示する
+    ax.legend(columns)
+
+    # グラフを表示する
+    fig.show()
+    fig.savefig("basic_info.png")
