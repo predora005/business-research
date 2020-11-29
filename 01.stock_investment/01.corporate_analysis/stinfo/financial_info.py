@@ -193,6 +193,47 @@ def trim_unnecessary_from_dataframe(df):
     return new_df
     
 ##############################
+# 複数銘柄の決算情報を整形する
+##############################
+def reshape_financial_info(df):
+    """ 複数銘柄の決算情報を整形する。
+    
+    Args:
+        df  (DataFrame) : 複数銘柄の決算情報が格納されたデータフレーム
+
+    Returns:
+        DataFrame   : 整形後のDataFrame
+    """
+    
+    # 各銘柄のデータと統計量を結合する。
+    new_df = df.copy()
+    
+    # 売上高(百万円)    -> 売上高(十億円)
+    # 営業利益(百万円)　-> 営業利益(十億円)
+    # 経常利益(百万円)  -> 経常利益(十億円)
+    # 純利益(百万円)    -> 純利益(十億円)
+    # 総資産(百万円)    -> 総資産(十億円)
+    # 純資産(百万円)    -> 純資産(十億円)
+    new_df['売上高'] = new_df['売上高'] / 1.0e+3
+    new_df['営業利益'] = new_df['営業利益'] / 1.0e+3
+    new_df['経常利益'] = new_df['経常利益'] / 1.0e+3
+    new_df['純利益'] = new_df['純利益'] / 1.0e+3
+    new_df['総資産'] = new_df['総資産'] / 1.0e+3
+    new_df['純資産'] = new_df['純資産'] / 1.0e+3
+    new_df = new_df.rename(columns={
+        '売上高'        : '売上高(十億円)', 
+        '営業利益'      : '営業利益(十億円)',
+        '経常利益'      : '経常利益(十億円)',
+        '純利益'        : '純利益(十億円)',
+        '1株益'         : '1株益(円)',
+        '1株純資産'     : '1株純資産(円)',
+        '総資産'        : '総資産(十億円)',
+        '純資産'        : '純資産(十億円)',
+    })
+    
+    return new_df
+    
+##############################
 # 決算情報のうち指定したデータを可視化する
 ##############################
 def visualize_financial_info(df, data_name, filepath):
@@ -258,22 +299,22 @@ def visualize_financial_infos(df, data_names, filepath):
         figsize=(6, 4)
     elif data_num == 2:
         rows, cols = (1, 2)
-        figsize=(8, 4)
+        figsize=(10, 4)
     elif data_num == 3:
         rows, cols = (1, 3)
-        figsize=(12, 4)
+        figsize=(15, 4)
     elif data_num == 4:
         rows, cols = (2, 2)
-        figsize=(8, 8)
+        figsize=(10, 8)
     elif data_num <= 6:
         rows, cols = (2, 3)
-        figsize=(12, 8)
+        figsize=(15, 8)
     elif data_num <= 9:
         rows, cols = (3, 3)
-        figsize=(12, 12)
+        figsize=(15, 12)
     else:
         rows, cols = (4, 4)
-        figsize=(16, 16)
+        figsize=(20, 16)
         
     # Figurを取得
     fig = plt.figure(figsize=figsize)
@@ -287,6 +328,60 @@ def visualize_financial_infos(df, data_names, filepath):
         
         # データ名
         data_name = data_names[i]
+        
+        # 銘柄の名称リスト
+        brand_names = list(df.index.unique('名称'))
+        
+        # 全銘柄のデータを折れ線グラフに表示
+        for brand_name in brand_names:
+            
+            brand_df = df.loc[(brand_name,)]    # 指定した銘柄のデータ
+            x = brand_df.index                  # 決算期
+            y = brand_df[data_name]             # 可視化するデータ
+            
+            # 折れ線グラフ表示
+            ax.plot(x, y, marker='o')
+        
+        # 補助線を描画
+        ax.grid(axis='y', color='gray', ls='--')
+        
+        # 軸ラベルをセット
+        plt.xlabel(data_name, size=15)
+        
+        # 凡例を表示
+        ax.legend(brand_names)
+    
+    # 不要な余白を削る
+    plt.tight_layout()
+    
+    # グラフを表示
+    fig.show()
+    fig.savefig(filepath)
+
+##############################
+# 決算情報のうちROEとROAを可視化する
+##############################
+def visualize_roe_roa(df, filepath):
+    """ 決算情報のうち指定した複数データを可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    # 可視化するデータ
+    data_names = ['ROE', 'ROA']
+
+    # Figurを取得
+    fig = plt.figure(figsize=(10, 4))
+
+    # 指定した全データをデータ別に折れ線グラフで表示する
+    for i, data_name in enumerate(data_names):
+        
+        # Axesを取得
+        ax = fig.add_subplot(1, 2, i+1)
         
         # 銘柄の名称リスト
         brand_names = list(df.index.unique('名称'))

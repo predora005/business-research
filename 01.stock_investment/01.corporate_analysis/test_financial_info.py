@@ -12,8 +12,8 @@ if __name__ == '__main__':
     
     codes = {
         'JR東日本'  : 9020, 
-        'JR西日本'  : 9022, 
-        'JR東海'    : 9021, 
+        'JR東海'    : 9022, 
+        'JR西日本'  : 9021, 
         '東急'      : 9005, 
         '近鉄'      : 9041,
     }
@@ -26,14 +26,19 @@ if __name__ == '__main__':
     df['ROE'] = df['純利益'] / df['純資産'] * 100
     print(df)
     
+    # 複数銘柄の決算情報を整形する
+    df = reshape_financial_info(df)
+        
     # ROEとROAを可視化する
     visualize_financial_info(df, 'ROE', 'roe.png')
     visualize_financial_info(df, 'ROA', 'roa.png')
     
-    visualize_financial_infos(df, ['売上高'], 'test1.png')
+    # ROEとROAをセットで可視化する
+    visualize_roe_roa(df, 'roe_roa.png')
+    
+    # 決算情報のうち指定した複数データを可視化する
     visualize_financial_infos(df, ['ROA', 'ROE'], 'test2.png')
-    visualize_financial_infos(df, ['売上高', '営業利益', '経常利益'], 'test3.png')
-    visualize_financial_infos(df, ['売上高', '営業利益', '経常利益', '純利益'], 'test4.png')
+    visualize_financial_infos(df, ['売上高(十億円)', '営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 'test4.png')
     
     #code = 9020
     #
