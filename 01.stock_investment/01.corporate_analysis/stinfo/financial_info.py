@@ -235,3 +235,84 @@ def visualize_financial_info(df, data_name, filepath):
     # グラフを表示
     fig.show()
     fig.savefig(filepath)
+    
+##############################
+# 決算情報のうち指定した複数データを可視化する
+##############################
+def visualize_financial_infos(df, data_names, filepath):
+    """ 決算情報のうち指定した複数データを可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+        data_names  (list)      : 可視化する列名のリスト
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    data_num = len(data_names)
+    
+    # サブプロットの行数・列数を決定
+    if data_num == 1:
+        rows, cols = (1, 1)
+        figsize=(6, 4)
+    elif data_num == 2:
+        rows, cols = (1, 2)
+        figsize=(8, 4)
+    elif data_num == 3:
+        rows, cols = (1, 3)
+        figsize=(12, 4)
+    elif data_num == 4:
+        rows, cols = (2, 2)
+        figsize=(8, 8)
+    elif data_num <= 6:
+        rows, cols = (2, 3)
+        figsize=(12, 8)
+    elif data_num <= 9:
+        rows, cols = (3, 3)
+        figsize=(12, 12)
+    else:
+        rows, cols = (4, 4)
+        figsize=(16, 16)
+        
+    # Figurを取得
+    fig = plt.figure(figsize=figsize)
+    #fig = plt.figure()
+    
+    # 指定した全データをデータ別に折れ線グラフで表示する
+    for i in range(data_num):
+        
+        # Axesを取得
+        ax = fig.add_subplot(rows, cols, i+1)
+        
+        # データ名
+        data_name = data_names[i]
+        
+        # 銘柄の名称リスト
+        brand_names = list(df.index.unique('名称'))
+        
+        # 全銘柄のデータを折れ線グラフに表示
+        for brand_name in brand_names:
+            
+            brand_df = df.loc[(brand_name,)]    # 指定した銘柄のデータ
+            x = brand_df.index                  # 決算期
+            y = brand_df[data_name]             # 可視化するデータ
+            
+            # 折れ線グラフ表示
+            ax.plot(x, y, marker='o')
+        
+        # 補助線を描画
+        ax.grid(axis='y', color='gray', ls='--')
+        
+        # 軸ラベルをセット
+        plt.xlabel(data_name, size=15)
+        
+        # 凡例を表示
+        ax.legend(brand_names)
+    
+    # 不要な余白を削る
+    plt.tight_layout()
+    
+    # グラフを表示
+    fig.show()
+    fig.savefig(filepath)

@@ -26,9 +26,14 @@ if __name__ == '__main__':
     df['ROE'] = df['純利益'] / df['純資産'] * 100
     print(df)
     
-    
+    # ROEとROAを可視化する
     visualize_financial_info(df, 'ROE', 'roe.png')
     visualize_financial_info(df, 'ROA', 'roa.png')
+    
+    visualize_financial_infos(df, ['売上高'], 'test1.png')
+    visualize_financial_infos(df, ['ROA', 'ROE'], 'test2.png')
+    visualize_financial_infos(df, ['売上高', '営業利益', '経常利益'], 'test3.png')
+    visualize_financial_infos(df, ['売上高', '営業利益', '経常利益', '純利益'], 'test4.png')
     
     #code = 9020
     #
