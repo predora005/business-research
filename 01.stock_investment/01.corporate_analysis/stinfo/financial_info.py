@@ -6,6 +6,7 @@ import time
 import numpy as np
 import pandas as pd
 import re
+import matplotlib.pyplot as plt
 
 ##############################
 # 指定した複数銘柄の決算情報を取得する
@@ -191,3 +192,46 @@ def trim_unnecessary_from_dataframe(df):
     
     return new_df
     
+##############################
+# 決算情報のうち指定したデータを可視化する
+##############################
+def visualize_financial_info(df, data_name, filepath):
+    """ 決算情報のうち指定したデータを可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+        data_name   (string)    : 可視化する列名
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    # FigureとAxesを取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 銘柄の名称リスト
+    brand_names = list(df.index.unique('名称'))
+    
+    # 全銘柄のデータを折れ線グラフに表示
+    for brand_name in brand_names:
+        
+        brand_df = df.loc[(brand_name,)]    # 指定した銘柄のデータ
+        x = brand_df.index                  # 決算期
+        y = brand_df[data_name]             # 可視化するデータ
+        
+        # 折れ線グラフ表示
+        ax.plot(x, y, marker='o')
+    
+    # 補助線を描画
+    ax.grid(axis='y', color='gray', ls='--')
+    
+    # 軸ラベルをセット
+    plt.xlabel(data_name, size=15)
+    
+    # 凡例を表示
+    ax.legend(brand_names)
+    
+    # グラフを表示
+    fig.show()
+    fig.savefig(filepath)

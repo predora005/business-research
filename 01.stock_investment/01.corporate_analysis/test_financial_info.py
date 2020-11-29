@@ -7,6 +7,9 @@ from stinfo import *
 ##################################################
 if __name__ == '__main__':
     
+    # matplotlibの日本語フォント設定
+    plt_font_init()
+    
     codes = {
         'JR東日本'  : 9020, 
         'JR西日本'  : 9022, 
@@ -17,12 +20,15 @@ if __name__ == '__main__':
     
     # 指定した複数銘柄の基本情報を取得する。
     df = get_financial_infos(codes)
-    print(df)
-    
+
     # ROAとROEを求める
     df['ROA'] = df['純利益'] / df['総資産'] * 100
     df['ROE'] = df['純利益'] / df['純資産'] * 100
-    print(df[['ROA', 'ROE']])
+    print(df)
+    
+    
+    visualize_financial_info(df, 'ROE', 'roe.png')
+    visualize_financial_info(df, 'ROA', 'roa.png')
     
     #code = 9020
     #
