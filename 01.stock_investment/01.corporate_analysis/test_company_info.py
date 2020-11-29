@@ -9,6 +9,9 @@ import re
 ##################################################
 if __name__ == '__main__':
     
+    # matplotlibの日本語フォント設定
+    plt_font_init()
+    
     codes = {
         'JR東日本'  : 9020, 
         'JR西日本'  : 9022, 
@@ -27,8 +30,9 @@ if __name__ == '__main__':
     
     # 複数銘柄の基本情報を可視化する
     df = df2.drop(index='標準偏差')
-    #visualize_basic_info(df, ['PER(調整後)'])
-    visualize_basic_info(df, ['PSR', 'PBR'])
+    visualize_basic_info(df, ['PER(調整後)'], 'per.png')
+    visualize_basic_info(df, ['PSR', 'PBR'], 'psr_pbr.png')
+    visualize_basic_info(df, ['時価総額(兆円)'], 'market_cap.png')
 
     #jre_dict = get_basic_info(9020)
     #jrw_dict = get_basic_info(9022)

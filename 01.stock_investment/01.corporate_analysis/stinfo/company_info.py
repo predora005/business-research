@@ -192,24 +192,20 @@ def reshape_basic_info(df):
 ##############################
 # 複数銘柄の基本情報を可視化する
 ##############################
-def visualize_basic_info(df, columns):
+def visualize_basic_info(df, columns, filepath):
     """ 複数銘柄の基本情報を整形する。
     
     Args:
-        df  (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
-
+        df      (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+        columns (list)      : 可視化する列名のリスト
+        filepath(string)    : 可視化したグラフを保存するファイルパス
+    
     Returns:
     """
     
-    # 日本語フォントの設定
-    import matplotlib as mpl
-    import matplotlib.pyplot as plt
-    mpl.font_manager._rebuild()    # キャッシュの削除
-    plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
-    
     # FigureとAxesを取得
     fig = plt.figure()
-    ax = fig.add_subplot(111)
+    ax = fig.add_subplot(1,1,1)
     
     # データ数を取得
     num_data = df.shape[0]      # 銘柄の数
@@ -229,19 +225,19 @@ def visualize_basic_info(df, columns):
         # 棒グラフを表示
         ax.bar(x, y, width=width, align='center')
         
-    # X軸の目盛位置を調整し、銘柄名を表示する
+    # X軸の目盛位置を調整し、銘柄名を表示
     labels = df.index.values
     offset = width / 2 * (num_column - 1)
     ax.set(xticks=xpos + offset, xticklabels=labels)
     
-    # 補助線を描画する
+    # 補助線を描画
     ax.grid(axis='y', color='gray', ls='--')
     
-    # 凡例を表示する
+    # 凡例を表示
     ax.legend(columns)
     
-    # グラフを表示する
+    # グラフを表示
     fig.show()
-    fig.savefig("basic_info.png")
+    fig.savefig(filepath)
     
     
