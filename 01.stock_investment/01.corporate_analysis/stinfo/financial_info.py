@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 ##############################
 # 指定した複数銘柄の決算情報を取得する
@@ -448,7 +447,7 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     
     # 色
     color_count = 0
-    colors = mpl.cm.Set1.colors
+    colors = plt.get_cmap('tab10')
     
     ########################################
     # 棒グラフの可視化処理
@@ -465,7 +464,7 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
         y = brand_df[data_name]
         
         # 棒グラフを表示
-        ax1.bar(x, y, width=width, align='center', label=data_name, color=colors[color_count])
+        ax1.bar(x, y, width=width, align='center', label=data_name, color=colors(color_count))
         color_count += 1
         
     # X軸の目盛位置を調整し、銘柄名を表示
@@ -489,7 +488,7 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
             
             # 折れ線グラフ表示
             y = brand_df[data_name]
-            ax2.plot(xpos+offset, y, marker='o', label=data_name, color=colors[color_count])
+            ax2.plot(xpos+offset, y, marker='o', label=data_name, color=colors(color_count))
             color_count += 1
             
         # Y軸の表示範囲を設定
