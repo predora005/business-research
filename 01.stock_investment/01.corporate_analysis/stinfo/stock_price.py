@@ -3,8 +3,10 @@
 import requests
 from bs4 import BeautifulSoup
 import time
-
 import pandas as pd
+import numpy as np
+import datetime
+import matplotlib.pyplot as plt
 
 ##############################
 # 指定した銘柄の株価を取得する
@@ -36,9 +38,7 @@ def get_stock_price(code, start_year, end_year):
         
         # <table>要素を取得
         table = bs.find('table')
-        #print(html)
-        #print(html.content)
-        
+
         # <table>要素内のヘッダ情報を取得する。
         if headers is None:
             headers = []
@@ -78,3 +78,89 @@ def get_stock_price(code, start_year, end_year):
     
     return whole_df
     
+##################################################
+# 株価情報のデータタイプを修正する
+##################################################
+def astype_stock_price(df):
+    """ 株価情報のデータタイプを修正する
+    
+    Args:
+        df          (DataFrame) : 株価が格納されたデータフレーム
+
+    Returns:
+        DataFrame  : データタイプ修正後のDataFrame
+    """
+    
+    dtypes = {}
+    
+    for column in df.columns:
+        if column == '日付':
+            dtypes[column] = 'datetime64'
+        else:
+            dtypes[column] ='float64'
+            
+    new_df = df.astype(dtypes)
+    
+    return new_df
+
+##################################################
+# 株価情報に移動平均を追加する
+##################################################
+def add_moving_average_stock_price(df):
+    """ 株価情報に移動平均を追加する
+    
+    Args:
+        df          (DataFrame) : 株価が格納されたデータフレーム
+
+    Returns:
+        DataFrame  : データ追加後のDataFrame
+    """
+    
+    df['5日移動平均'] = df['終値'].rolling(window=5).mean()
+    df['25日移動平均'] = df['終値'].rolling(window=25).mean()
+    df['75日移動平均'] = df['終値'].rolling(window=75).mean()
+    
+    return df
+    
+##################################################
+# 株価を折れ線グラフで可視化する
+##################################################
+def visualize_stock_price_in_line(df, show_average=False, filepath=None):
+    """ 決算情報のうち指定した複数データを折れ線グラフで可視化する
+    
+    Args:
+        df          (DataFrame) : 株価が格納されたデータフレーム
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    # FigureとAxesを取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 終値の折れ線グラフを追加
+    x = df['日付']
+    y = df['終値']
+    ax.plot(x, y, label='終値', linewidth=2.0)
+    
+    # 移動平均の折れ線グラフを追加
+    if show_average:
+        average_columns = ['5日移動平均', '25日移動平均', '75日移動平均']
+        for column in average_columns:
+            x = df['日付']
+            y = df[column]
+            ax.plot(x, y, label=column, linewidth=1.0)
+    
+    # 目盛り線を表示
+    ax.grid(color='gray', linestyle='--', linewidth=0.5)
+    
+    # 凡例を表示
+    ax.legend()
+    
+    # グラフを表示
+    fig.show()
+    
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)    
