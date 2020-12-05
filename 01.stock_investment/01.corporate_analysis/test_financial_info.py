@@ -24,8 +24,7 @@ if __name__ == '__main__':
     # ROAとROEを求める
     df['ROA'] = df['純利益'] / df['総資産'] * 100
     df['ROE'] = df['純利益'] / df['純資産'] * 100
-    print(df)
-    
+
     # 複数銘柄の決算情報を整形する
     df = reshape_financial_info(df)
         
@@ -44,9 +43,17 @@ if __name__ == '__main__':
     
     # 決算情報のうち指定した１銘柄の指定データを可視化する
     visualize_financial_info_for_specified_brand(
-        df, 'JR東日本', ['売上高(十億円)', '営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 'jr_east_pl.png')
+        df, 'JR東日本', bar_datas=['営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 
+        line_datas=['売上高(十億円)'], filepath='jr_east_pl.png')
     visualize_financial_info_for_specified_brand(
-        df, 'JR東日本', ['総資産(十億円)', '純資産(十億円)'], 'jr_east_bs.png')
+        df, 'JR東日本', bar_datas=['総資産(十億円)', '純資産(十億円)'], 
+        line_datas=['ROA'], filepath='jr_east_bs.png')
+    visualize_financial_info_for_specified_brand(
+        df, 'JR東海', bar_datas=['営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 
+        line_datas=['売上高(十億円)'], filepath='jr_central_pl.png')
+    visualize_financial_info_for_specified_brand(
+        df, 'JR東海', bar_datas=['総資産(十億円)', '純資産(十億円)'], 
+        line_datas=['ROA'], filepath='jr_central_bs.png')
 
     #code = 9020
     #

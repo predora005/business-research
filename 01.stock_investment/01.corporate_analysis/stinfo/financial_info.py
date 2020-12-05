@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import re
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 ##############################
 # 指定した複数銘柄の決算情報を取得する
@@ -420,13 +421,14 @@ def visualize_roe_roa(df, filepath):
 ##################################################
 # 決算情報のうち指定した１銘柄の指定データを可視化する
 ##################################################
-def visualize_financial_info_for_specified_brand(df, brand_name, data_names, filepath):
+def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line_datas=None, filepath=None):
     """ 決算情報のうち指定した１銘柄の指定データを可視化する
     
     Args:
         df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
         brand_name  (string)    : 可視化する銘柄の名称
-        data_name   (list)      : 可視化する列名のリスト
+        bar_datas   (list)      : 棒グラフで可視化する列名のリスト
+        line_datas  (list)      : 折れ線グラフで可視化する列名のリスト
         filepath    (string)    : 可視化したグラフを保存するファイルパス
     
     Returns:
@@ -434,41 +436,81 @@ def visualize_financial_info_for_specified_brand(df, brand_name, data_names, fil
     
     # 可視化するデータを抽出
     brand_df = df.loc[(brand_name,)]        # 指定した銘柄
-    fiscal_year = brand_df.index.values # 決算期
+    fiscal_year = brand_df.index.values     # 決算期
     
     # データ数を取得
     num_year = len(fiscal_year)     # 可視化する決算期の数
-    num_data = len(data_names)      # 可視化するデータ数
+    num_bar_data = len(bar_datas)   # 棒グラフで可視化するデータ数
     
     # FigureとAxesを取得
     fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
+    ax1 = fig.add_subplot(1,1,1)
+    
+    # 色
+    color_count = 0
+    colors = mpl.cm.Set1.colors
+    
+    ########################################
+    # 棒グラフの可視化処理
+    ########################################
     
     # 棒グラフを横並びで表示するためのパラメータ
-    width = 0.8 / num_data      # 棒グラフの幅
-    xpos = np.arange(num_year)  # X軸上の位置
+    width = 0.8 / num_bar_data      # 棒グラフの幅
+    xpos = np.arange(num_year)      # X軸上の位置
     
-    # 指定した列数分ループ
-    for i, data_name in enumerate(data_names):
+    # 可視化するデータ数分ループ
+    for i, data_name in enumerate(bar_datas):
         
         x = xpos + width * i
         y = brand_df[data_name]
         
         # 棒グラフを表示
-        ax.bar(x, y, width=width, align='center')
+        ax1.bar(x, y, width=width, align='center', label=data_name, color=colors[color_count])
+        color_count += 1
         
     # X軸の目盛位置を調整し、銘柄名を表示
-    offset = width / 2 * (num_data - 1)
-    ax.set(xticks=xpos+offset, xticklabels=fiscal_year)
+    offset = width / 2 * (num_bar_data - 1)
+    ax1.set(xticks=xpos+offset, xticklabels=fiscal_year)
+    
+    # Y軸の表示範囲を設定
+    ymax = brand_df[bar_datas].max().max() * 2
+    ax1.set_ylim(ymin=0, ymax=ymax)
+    
+    ########################################
+    # 折れ線グラフの可視化処理
+    ########################################
+    if line_datas is not None:
+        
+        # 右軸のAxesを取得
+        ax2 = ax1.twinx()
+        
+        # 可視化するデータ数分ループ
+        for i, data_name in enumerate(line_datas):
+            
+            # 折れ線グラフ表示
+            y = brand_df[data_name]
+            ax2.plot(xpos+offset, y, marker='o', label=data_name, color=colors[color_count])
+            color_count += 1
+            
+        # Y軸の表示範囲を設定
+        ymax = brand_df[line_datas].max().max() * 1.5
+        ax2.set_ylim(ymin=0, ymax=ymax)
     
     # 補助線を描画
-    ax.grid(axis='y', color='gray', ls='--')
+    ax1.grid(axis='y', color='gray', ls='--')
     
     # 凡例を表示
-    ax.legend(data_names)
+    h1, l1 = ax1.get_legend_handles_labels()
+    if line_datas is None:
+        ax1.legend(h1, l1, loc='upper right')
+    else:
+        h2, l2 = ax2.get_legend_handles_labels()
+        ax1.legend(h1+h2, l1+l2, loc='upper right')
     
     # グラフを表示
     fig.show()
-    fig.savefig(filepath)    
     
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)    
     
