@@ -42,6 +42,12 @@ if __name__ == '__main__':
     visualize_financial_infos_in_line(df, ['純利益(十億円)', '総資産(十億円)', '純資産(十億円)'], 'test3.png', from_zero=True)
     visualize_financial_infos_in_line(df, ['売上高(十億円)', '営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 'test4.png', from_zero=True)
     
+    # 決算情報のうち指定した１銘柄の指定データを可視化する
+    visualize_financial_info_for_specified_brand(
+        df, 'JR東日本', ['売上高(十億円)', '営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 'jr_east_pl.png')
+    visualize_financial_info_for_specified_brand(
+        df, 'JR東日本', ['総資産(十億円)', '純資産(十億円)'], 'jr_east_bs.png')
+
     #code = 9020
     #
     ## 指定した証券コードの決算情報を取得する。

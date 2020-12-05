@@ -416,3 +416,59 @@ def visualize_roe_roa(df, filepath):
     # グラフを表示
     fig.show()
     fig.savefig(filepath)
+
+##################################################
+# 決算情報のうち指定した１銘柄の指定データを可視化する
+##################################################
+def visualize_financial_info_for_specified_brand(df, brand_name, data_names, filepath):
+    """ 決算情報のうち指定した１銘柄の指定データを可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
+        brand_name  (string)    : 可視化する銘柄の名称
+        data_name   (list)      : 可視化する列名のリスト
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    # 可視化するデータを抽出
+    brand_df = df.loc[(brand_name,)]        # 指定した銘柄
+    fiscal_year = brand_df.index.values # 決算期
+    
+    # データ数を取得
+    num_year = len(fiscal_year)     # 可視化する決算期の数
+    num_data = len(data_names)      # 可視化するデータ数
+    
+    # FigureとAxesを取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 棒グラフを横並びで表示するためのパラメータ
+    width = 0.8 / num_data      # 棒グラフの幅
+    xpos = np.arange(num_year)  # X軸上の位置
+    
+    # 指定した列数分ループ
+    for i, data_name in enumerate(data_names):
+        
+        x = xpos + width * i
+        y = brand_df[data_name]
+        
+        # 棒グラフを表示
+        ax.bar(x, y, width=width, align='center')
+        
+    # X軸の目盛位置を調整し、銘柄名を表示
+    offset = width / 2 * (num_data - 1)
+    ax.set(xticks=xpos+offset, xticklabels=fiscal_year)
+    
+    # 補助線を描画
+    ax.grid(axis='y', color='gray', ls='--')
+    
+    # 凡例を表示
+    ax.legend(data_names)
+    
+    # グラフを表示
+    fig.show()
+    fig.savefig(filepath)    
+    
+    
