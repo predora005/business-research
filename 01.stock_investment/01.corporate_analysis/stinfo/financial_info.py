@@ -233,11 +233,11 @@ def reshape_financial_info(df):
     
     return new_df
     
-##############################
-# 決算情報のうち指定したデータを可視化する
-##############################
-def visualize_financial_info(df, data_name, filepath):
-    """ 決算情報のうち指定したデータを可視化する
+##################################################
+# 決算情報のうち指定したデータを棒グラフで可視化する
+##################################################
+def visualize_financial_info_in_bar(df, data_name, filepath):
+    """ 決算情報のうち指定したデータを棒グラフで可視化する
     
     Args:
         df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
@@ -277,11 +277,12 @@ def visualize_financial_info(df, data_name, filepath):
     fig.show()
     fig.savefig(filepath)
     
-##############################
-# 決算情報のうち指定した複数データを可視化する
-##############################
-def visualize_financial_infos(df, data_names, filepath):
-    """ 決算情報のうち指定した複数データを可視化する
+##################################################
+# 決算情報のうち指定した複数データを
+# 折れ線グラフで可視化する
+##################################################
+def visualize_financial_infos_in_line(df, data_names, filepath, from_zero=False):
+    """ 決算情報のうち指定した複数データを折れ線グラフで可視化する
     
     Args:
         df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
@@ -350,6 +351,10 @@ def visualize_financial_infos(df, data_names, filepath):
         
         # 凡例を表示
         ax.legend(brand_names)
+        
+        # Y軸の表示範囲を設定
+        if from_zero:
+            ax.set_ylim(ymin=0)
     
     # 不要な余白を削る
     plt.tight_layout()
