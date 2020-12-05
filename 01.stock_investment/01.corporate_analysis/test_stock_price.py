@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from stinfo import *
+import datetime
 
 ##################################################
 # メイン
@@ -11,7 +12,7 @@ if __name__ == '__main__':
     plt_font_init()
     
     code = 9020
-    start_year = 2018
+    start_year = 2016
     end_year = 2020
     
     # 指定した銘柄の株価を取得する
@@ -26,7 +27,11 @@ if __name__ == '__main__':
     # 株価情報に移動平均を追加する
     df = add_moving_average_stock_price(df)
     
+    # 2020/01/01以降のデータを抽出
+    df =df[df['日付'] >= datetime.datetime(2020,1,1)]
+    print(df.head())
+    
     # 株価を折れ線グラフで可視化する
-    visualize_stock_price_in_line(df, filepath='jr_east_price.png')
+    visualize_stock_price_in_line(df, show_average=True, filepath='jr_east_price.png')
     
     

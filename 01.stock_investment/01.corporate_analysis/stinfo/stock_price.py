@@ -129,8 +129,9 @@ def visualize_stock_price_in_line(df, show_average=False, filepath=None):
     """ 決算情報のうち指定した複数データを折れ線グラフで可視化する
     
     Args:
-        df          (DataFrame) : 株価が格納されたデータフレーム
-        filepath    (string)    : 可視化したグラフを保存するファイルパス
+        df              (DataFrame) : 株価が格納されたデータフレーム
+        show_average    (boolean)   : 移動平均を表示するか否か
+        filepath        (string)    : 可視化したグラフを保存するファイルパス
     
     Returns:
     """
