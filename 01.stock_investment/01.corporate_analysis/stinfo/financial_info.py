@@ -77,8 +77,14 @@ def get_financial_info(code):
     # 財務情報から不要データを削る。
     fin_df2 = trim_unnecessary_from_dataframe(fin_df2)
     
+    # キャッシュフロー情報から不要データを削る。
+    cf_df = get_cf_table(soup)
+    
+    # キャッシュフロー情報から不要データを削る。
+    cf_df = trim_unnecessary_from_dataframe(cf_df)
+    
     # DataFrameを結合する    
-    df = pd.concat([fin_df1, fin_df2], axis=1)
+    df = pd.concat([fin_df1, fin_df2, cf_df], axis=1)
     
     return df
     
@@ -146,6 +152,70 @@ def get_financial_table(bs, table_name):
     return df
         
 ##############################
+# キャッシュフロー情報を抽出する
+##############################
+def get_cf_table(bs):
+    """ キャッシュフロー情報を抽出する
+    
+    Args:
+        bs  (BeautifulSoup) : 抽出対象HTMLのBeautifulSoupオブジェクト
+
+    Returns:
+        DataFrame  :  <table>要素を格納したDataFrame
+    """
+    
+    # 全<table>要素を抽出
+    table_all = bs.find_all('table')
+    
+    # キャッシュフロー情報の<table>要素を検索する。
+    cf_table = None
+    for table in table_all:
+        
+        # <thead>要素を取得
+        thead = table.find('thead')
+        if thead is None:
+            continue
+        
+        # <thead>内の全<th>要素を取得
+        thead_th = thead.find_all('th')
+        for th in thead_th:
+            if th.text == '営業CF':
+                cf_table = table
+                break
+    
+    # <table>要素内のヘッダ情報を取得する。
+    headers = []
+    thead_th = cf_table.find('thead').find_all('th')
+    for th in thead_th:
+        headers.append(th.text)
+    
+    # <table>要素内のデータを取得する。
+    rows = []
+    tbody_tr = cf_table.find('tbody').find('tr').find_all('tr')
+    for tr in tbody_tr:
+        
+        # 1行内の全データを格納するためのリスト
+        row = []
+        
+        # <tr>要素内の<th>要素を取得する。
+        th = tr.find('th')
+        row.append(th.text)
+        
+        # <tr>要素内の<td>要素を取得する。
+        td_all = tr.find_all('td')
+        for td in td_all:
+            row.append(td.text)
+        
+        # 1行のデータを格納したリストを、リストに格納
+        rows.append(row)
+
+    # DataFrameを生成する
+    df = pd.DataFrame(rows, columns=headers)
+    df = df.set_index(headers[0])   # 先頭の列(決算期)をインデックスに指定する
+    
+    return df
+    
+##############################
 # DataFrameから不要なデータを削る。
 ##############################
 def trim_unnecessary_from_dataframe(df):
@@ -161,7 +231,7 @@ def trim_unnecessary_from_dataframe(df):
     # 数値のカンマを削除する関数
     def trim_camma(x):
         # 2,946,639.3のようなカンマ区切り、小数点有りの数値か否か確認する
-        comma_re = re.search(r"(\d{1,3}(,\d{3})*(\.\d+){0,1})", x)
+        comma_re = re.search(r"([+-]?\d{1,3}(,\d{3})*(\.\d+){0,1})", x)
         if comma_re:
             value = comma_re.group(1)
             value = value.replace(',', '') # カンマを削除
@@ -214,12 +284,22 @@ def reshape_financial_info(df):
     # 純利益(百万円)    -> 純利益(十億円)
     # 総資産(百万円)    -> 総資産(十億円)
     # 純資産(百万円)    -> 純資産(十億円)
+    # 営業CF(百万円)    -> 営業CF(十億円)
+    # 投資CF(百万円)    -> 投資CF(十億円)
+    # 財務CF(百万円)    -> 財務CF(十億円)
+    # 現金期末残高(百万円)    -> 現金期末残高(十億円)
+    # フリーCF(百万円)  -> フリーCF(十億円)
     new_df['売上高'] = new_df['売上高'] / 1.0e+3
     new_df['営業利益'] = new_df['営業利益'] / 1.0e+3
     new_df['経常利益'] = new_df['経常利益'] / 1.0e+3
     new_df['純利益'] = new_df['純利益'] / 1.0e+3
     new_df['総資産'] = new_df['総資産'] / 1.0e+3
     new_df['純資産'] = new_df['純資産'] / 1.0e+3
+    new_df['営業CF'] = new_df['営業CF'] / 1.0e+3
+    new_df['投資CF'] = new_df['投資CF'] / 1.0e+3
+    new_df['財務CF'] = new_df['財務CF'] / 1.0e+3
+    new_df['現金期末残高'] = new_df['現金期末残高'] / 1.0e+3
+    new_df['フリーCF'] = new_df['フリーCF'] / 1.0e+3
     new_df = new_df.rename(columns={
         '売上高'        : '売上高(十億円)', 
         '営業利益'      : '営業利益(十億円)',
@@ -229,6 +309,11 @@ def reshape_financial_info(df):
         '1株純資産'     : '1株純資産(円)',
         '総資産'        : '総資産(十億円)',
         '純資産'        : '純資産(十億円)',
+        '営業CF'        : '営業CF(十億円)',
+        '投資CF'        : '投資CF(十億円)',
+        '財務CF'        : '財務CF(十億円)',
+        '現金期末残高'  : '現金期末残高(十億円)',
+        'フリーCF'      : 'フリーCF(十億円)',
     })
     
     return new_df
@@ -472,8 +557,10 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     ax1.set(xticks=xpos+offset, xticklabels=fiscal_year)
     
     # Y軸の表示範囲を設定
-    ymax = brand_df[bar_datas].max().max() * 2
-    ax1.set_ylim(ymin=0, ymax=ymax)
+    #ymax = brand_df[bar_datas].max().max() * 2
+    #ax1.set_ylim(ymin=0, ymax=ymax)
+    ymin, ymax = get_yminmax_financial_info(brand_df, bar_datas)
+    ax1.set_ylim(ymin=ymin*1.5, ymax=ymax*1.5)
     
     ########################################
     # 折れ線グラフの可視化処理
@@ -492,8 +579,15 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
             color_count += 1
             
         # Y軸の表示範囲を設定
-        ymax = brand_df[line_datas].max().max() * 1.5
-        ax2.set_ylim(ymin=0, ymax=ymax)
+        ymin, ymax = get_yminmax_financial_info(brand_df, line_datas)
+        ax2.set_ylim(ymin=ymin*1.3, ymax=ymax*1.3)
+        #ymax = brand_df[line_datas].max().max() 
+        #ymin = brand_df[line_datas].min().min()
+        #if ymin >= 0:
+        #    ax2.set_ylim(ymin=0, ymax=ymax*1.5)
+        #else:
+        #    abs_max = max([abs(ymin), ymax])
+        #    ax2.set_ylim(ymin=-abs_max, ymax=abs_max)
     
     # 補助線を描画
     ax1.grid(axis='y', color='gray', ls='--')
@@ -513,3 +607,29 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     if filepath is not None:
         fig.savefig(filepath)    
     
+    
+##################################################
+# 指定した列を可視化する際のY軸の表示範囲を取得する
+##################################################
+def get_yminmax_financial_info(df, columns):
+    """ 指定した列を可視化する際のY軸の表示範囲を取得する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の決算情報が格納されたデータフレーム
+        columns     (list)      : 可視化する列
+    
+    Returns:
+        tuple   : Y軸の表示範囲を(ymin, ymax)の形で返す
+    """
+        
+    # 最大値・最小値を取得
+    ymax = df[columns].max().max() 
+    ymin = df[columns].min().min()
+    
+    if ymin >= 0:
+        return(0, ymax)
+        #ax2.set_ylim(ymin=0, ymax=ymax*1.5)
+    else:
+        abs_max = max([abs(ymin), ymax])
+        return(-abs_max, abs_max)
+        #ax2.set_ylim(ymin=-abs_max, ymax=abs_max)
