@@ -557,8 +557,6 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     ax1.set(xticks=xpos+offset, xticklabels=fiscal_year)
     
     # Y軸の表示範囲を設定
-    #ymax = brand_df[bar_datas].max().max() * 2
-    #ax1.set_ylim(ymin=0, ymax=ymax)
     ymin, ymax = get_yminmax_financial_info(brand_df, bar_datas)
     ax1.set_ylim(ymin=ymin*1.5, ymax=ymax*1.5)
     
@@ -581,14 +579,7 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
         # Y軸の表示範囲を設定
         ymin, ymax = get_yminmax_financial_info(brand_df, line_datas)
         ax2.set_ylim(ymin=ymin*1.3, ymax=ymax*1.3)
-        #ymax = brand_df[line_datas].max().max() 
-        #ymin = brand_df[line_datas].min().min()
-        #if ymin >= 0:
-        #    ax2.set_ylim(ymin=0, ymax=ymax*1.5)
-        #else:
-        #    abs_max = max([abs(ymin), ymax])
-        #    ax2.set_ylim(ymin=-abs_max, ymax=abs_max)
-    
+
     # 補助線を描画
     ax1.grid(axis='y', color='gray', ls='--')
     
@@ -600,6 +591,9 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
         h2, l2 = ax2.get_legend_handles_labels()
         ax1.legend(h1+h2, l1+l2, loc='upper right')
     
+    # グラフのタイトルを追加
+    plt.title(brand_name)
+
     # グラフを表示
     fig.show()
     
@@ -628,8 +622,7 @@ def get_yminmax_financial_info(df, columns):
     
     if ymin >= 0:
         return(0, ymax)
-        #ax2.set_ylim(ymin=0, ymax=ymax*1.5)
     else:
         abs_max = max([abs(ymin), ymax])
         return(-abs_max, abs_max)
-        #ax2.set_ylim(ymin=-abs_max, ymax=abs_max)
+    
