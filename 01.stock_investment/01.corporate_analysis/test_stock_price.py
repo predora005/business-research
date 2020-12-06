@@ -13,26 +13,29 @@ if __name__ == '__main__':
     
     codes = {
         'JR東日本'  : 9020, 
-#        'JR東海'    : 9022, 
+        'JR東海'    : 9022, 
         'JR西日本'  : 9021, 
-#        '東急'      : 9005, 
-#        '近鉄'      : 9041,
+        '東急'      : 9005, 
+        '近鉄'      : 9041,
     }
-    start_year = 2020
+    start_year = 2018
     end_year = 2020
     
     # 指定した複数銘柄の株価を取得する
     df = get_stock_prices(codes, start_year, end_year)
 
     # 2020/01/01以降のデータを抽出
-    df = df.loc[pd.IndexSlice[:, '2020-01-01':], :]
-
+    df2 = df.loc[pd.IndexSlice[:, '2020-01-01':], :]
+    
     # 複数銘柄の株価を折れ線グラフで可視化する
-    brand_names = list(df.index.unique('銘柄'))
-    visualize_multi_stock_prices_in_line(df, brand_names, show_average=True, filepath='stock_chart.png')
+    brand_names = list(df2.index.unique('銘柄'))
+    visualize_multi_stock_prices_in_line(df2, brand_names, show_average=True, filepath='stock_chart.png')
     
     # 複数銘柄の値上がり率を折れ線グラフで可視化する
-    visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath='stock_rate.png')
+    brand_names = list(df.index.unique('銘柄'))
+    #ref_date = datetime.date(2020, 1, 6)
+    ref_date = None
+    visualize_stock_price_rates_in_line(df, brand_names, ref_date=ref_date, filepath='stock_rate.png')
         
     #code = 9020
     #start_year = 2016
