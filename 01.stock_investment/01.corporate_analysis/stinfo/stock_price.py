@@ -9,14 +9,61 @@ import datetime
 import matplotlib.pyplot as plt
 
 ##############################
+# 指定した複数銘柄の株価を取得する
+##############################
+def get_stock_prices(codes, start_year, end_year):
+    """ 指定した複数銘柄の株価を取得する。
+    
+    Args:
+        codes       (dict)  : 証券コードと名称のディクショナリ
+                                 (ex){'JR東日本':9020, 'JR西日本': 9021}
+        start_year  (int)   : 取得開始年
+        end_year    (int)   : 取得終了年
+    Returns:
+        DataFrame   : 取得した情報を格納したDataFrame
+    """
+    
+    whole_df = None
+    for name in codes.keys():
+        
+        # 指定した証券コードの決算情報を取得する。
+        code = codes[name]
+        df = get_stock_price(code, start_year, end_year)
+        
+        # 株価情報のデータタイプを修正する
+        df = astype_stock_price(df)
+        
+        # 株価情報に移動平均を追加する
+        df = add_moving_average_stock_price(df)
+        
+        # 銘柄名を追加し、MultiIndexにする。
+        df['銘柄'] = name
+        df = df.set_index('銘柄', append=True)
+        
+        if whole_df is None:
+            whole_df = df
+        else:
+            whole_df = whole_df.append(df)
+        
+        # 1秒ディレイ
+        time.sleep(1)
+    
+    # indexを入れ替える
+    whole_df = whole_df.swaplevel('銘柄', '日付').sort_index()
+    
+    return whole_df
+    
+##############################
 # 指定した銘柄の株価を取得する
 ##############################
 def get_stock_price(code, start_year, end_year):
-    """ 指定した銘柄の決算情報を取得する。
+    """ 指定した銘柄の株価を取得する。
     
     Args:
-        code    (int) : 証券コード
-
+        code        (int)   : 証券コード
+        start_year  (int)   : 取得開始年
+        end_year    (int)   : 取得終了年
+        
     Returns:
         DataFrame  : 決算情報を格納したDataFrame
     """
@@ -173,3 +220,119 @@ def visualize_stock_price_in_line(df, title=None, show_average=False, filepath=N
     # グラフをファイルに出力
     if filepath is not None:
         fig.savefig(filepath)    
+
+##################################################
+# 複数銘柄の株価を折れ線グラフで可視化する
+##################################################
+def visualize_multi_stock_prices_in_line(df, brand_names, show_average=False, filepath=None):
+    """ 複数銘柄の株価を折れ線グラフで可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の株価が格納されたデータフレーム
+        brand_names (list)      : 可視化する銘柄名のリスト
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    # 銘柄数
+    brand_num = len(brand_names)
+    
+    # figsize, rows, colsを取得
+    figsize, rows, cols = get_subplot_size(brand_num)
+    
+    # Figureを取得
+    fig = plt.figure(figsize=figsize)
+
+    # 銘柄別に折れ線グラフで表示する
+    for i in range(brand_num):
+        
+        # Axesを取得
+        ax = fig.add_subplot(rows, cols, i+1)
+        
+        # 銘柄名
+        brand_name = brand_names[i]
+        
+        # 表示するデータを抽出
+        df_brand = df.loc[brand_name,]
+        x = df_brand.index  # 日付
+        y = df_brand['終値']
+        
+        # 折れ線グラフ表示
+        label = '{0:s}-終値'.format(brand_name)
+        ax.plot(x, y, label=label, linewidth=2.0)
+        
+        # 移動平均の折れ線グラフを追加
+        if show_average:
+            average_columns = ['5日移動平均', '25日移動平均', '75日移動平均']
+            for column in average_columns:
+                x = df_brand.index      # 日付
+                y = df_brand[column]    # 移動平均
+                label = '{0:s}-{1:s}'.format(brand_name, column)
+                ax.plot(x, y, label=label, linewidth=1.0)
+        
+        # 目盛り線を表示
+        ax.grid(color='gray', linestyle='--', linewidth=0.5)
+        
+        # 軸ラベルをセット
+        #plt.xlabel(data_name, size=15)
+        
+        # 凡例を表示
+        #ax.legend(brand_names)
+        ax.legend()
+        
+        # グラフのタイトルを追加
+        ax.set_title(brand_name)
+        
+        # Y軸の表示範囲を設定
+        #if from_zero:
+        #    ax.set_ylim(ymin=0)
+    
+    # 不要な余白を削る
+    plt.tight_layout()
+    
+    # グラフを表示
+    fig.show()
+    
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)
+        
+        
+##################################################
+# 複数グラフ表示する際の各種サイズを返す
+##################################################
+def get_subplot_size(plot_num):
+    """ 複数グラフ表示する際の各種サイズを返す
+    
+    Args:
+        plot_num     (int)  : 表示するグラフの個数
+
+    Returns:
+        figsize, rows, cols (int)
+    """
+    
+    # サブプロットの行数・列数を決定
+    if plot_num == 1:
+        rows, cols = (1, 1)
+        figsize=(6, 4)
+    elif plot_num == 2:
+        rows, cols = (1, 2)
+        figsize=(10, 4)
+    elif plot_num == 3:
+        rows, cols = (1, 3)
+        figsize=(15, 4)
+    elif plot_num == 4:
+        rows, cols = (2, 2)
+        figsize=(10, 8)
+    elif plot_num <= 6:
+        rows, cols = (2, 3)
+        figsize=(15, 8)
+    elif plot_num <= 9:
+        rows, cols = (3, 3)
+        figsize=(15, 12)
+    else:
+        rows, cols = (4, 4)
+        figsize=(20, 16)
+        
+        
+    return figsize, rows, cols
