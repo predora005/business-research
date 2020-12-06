@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 ##############################
 # 指定した複数銘柄の株価を取得する
@@ -219,7 +220,8 @@ def visualize_stock_price_in_line(df, title=None, show_average=False, filepath=N
     
     # グラフをファイルに出力
     if filepath is not None:
-        fig.savefig(filepath)    
+        fig.savefig(filepath)
+        
 
 ##################################################
 # 複数銘柄の株価を折れ線グラフで可視化する
@@ -297,7 +299,111 @@ def visualize_multi_stock_prices_in_line(df, brand_names, show_average=False, fi
     if filepath is not None:
         fig.savefig(filepath)
         
+##################################################
+# 複数銘柄の値上がり率を折れ線グラフで可視化する
+##################################################
+def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath=None):
+    """ 複数銘柄の株価を折れ線グラフで可視化する
+    
+    Args:
+        df          (DataFrame) : 複数銘柄の株価が格納されたデータフレーム
+        brand_names (list)      : 可視化する銘柄名のリスト
+        ref_data    (datetime)  : 値上がり率の基準とする日付
+        filepath    (string)    : 可視化したグラフを保存するファイルパス
+    
+    Returns:
+    """
+    
+    # 基準日を設定
+    if ref_date is None:
+        ref_date = df.index.get_level_values('日付').min()
+    
+    #df_rate = pd.DataFrame(index=df.index, columns=['値上がり率'])
+    df['値上がり率'] = np.nan
+    
+    # 銘柄別に値上がり率を計算
+    for brand_name in brand_names:
         
+        df_brand = df.loc[brand_name,]
+        
+        date_str = ref_date.strftime('%04Y-%02m-%02d')  # 基準日
+        base_price = df_brand.loc[date_str,'終値']      # 基準日の終値
+        rate = df_brand['終値'] / base_price - 1        # 値上がり率
+        
+        df.loc[(brand_name, ), '値上がり率'] = rate.values
+        
+        #s = df_brand['終値'] / base_price - 1
+        
+        #df_rate.loc[(brand_name, slice(None)), '値上がり率'] = s.values
+        #print(df_rate)
+        
+        #df_tmp =  df_brand['終値'] / base_price - 1
+        #df_tmp = pd.DataFrame({'値上がり率':df_tmp})
+        #df_tmp['銘柄'] = brand_name
+        #df_tmp = df_tmp.set_index('銘柄', append=True)
+        
+        #print('====================')
+        #print(df_tmp)
+        #print('====================')
+        #print(df.loc[(brand_name, ), '値上がり率'])
+        
+        #df.loc[(brand_name, ), '値上がり率'] = 0
+        #df.loc[(brand_name, ), '値上がり率'] = df_tmp['値上がり率']
+        #print(df.loc[(brand_name, ), '値上がり率'])
+        
+        #df_brand['値上がり率'] = df_brand['終値'] / df_brand.loc[date_str,'終値'] - 1
+        #df.loc[pd.IndexSlice[brand_name, :], '値上がり率'] \
+        #    = df_brand['終値'] / df_brand.loc[date_str,'終値'] - 1
+        #df_tmp = df.loc[(brand_name, ), '終値'] / df.loc[(brand_name, date_str), '終値']  - 1
+        #df1 = df.loc[(brand_name, ), '終値'] 
+        #df2 = df.loc[(brand_name, date_str), '終値']
+        #df3 = df1 / df2.iloc[0] - 1
+        #print('====================')
+        #print(df1)
+        #print('====================')
+        #print(df2)
+        #print('====================')
+        #print(df3)
+        #df3 = df3.set_index('銘柄', append=True)
+        #df = pd.concat([df, df_tmp], axis=1)
+        #print(df)
+    
+    #print(df)
+    
+    # FigureとAxesを取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 銘柄別に値上がり率を計算
+    for brand_name in brand_names:
+        
+        # 表示するデータを抽出
+        df_brand = df.loc[brand_name,]
+        x = df_brand.index  # 日付
+        y = df_brand['値上がり率']
+        
+        # 折れ線グラフを表示
+        ax.plot(x, y, label=brand_name)
+        
+    # 目盛り線を表示
+    ax.grid(color='gray', linestyle='--', linewidth=0.5)
+    
+    # 凡例を表示
+    ax.legend()
+    
+    # Y軸の単位をパーセント表示に設定
+    ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(1))
+    
+    # グラフのタイトルを追加
+    ax.set_title('値上がり率')
+    
+    # グラフを表示
+    fig.show()
+    
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)  
+    
 ##################################################
 # 複数グラフ表示する際の各種サイズを返す
 ##################################################

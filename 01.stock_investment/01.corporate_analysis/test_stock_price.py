@@ -18,7 +18,7 @@ if __name__ == '__main__':
 #        '東急'      : 9005, 
 #        '近鉄'      : 9041,
     }
-    start_year = 2019
+    start_year = 2020
     end_year = 2020
     
     # 指定した複数銘柄の株価を取得する
@@ -31,6 +31,9 @@ if __name__ == '__main__':
     brand_names = list(df.index.unique('銘柄'))
     visualize_multi_stock_prices_in_line(df, brand_names, show_average=True, filepath='stock_chart.png')
     
+    # 複数銘柄の値上がり率を折れ線グラフで可視化する
+    visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath='stock_rate.png')
+        
     #code = 9020
     #start_year = 2016
     #end_year = 2020
