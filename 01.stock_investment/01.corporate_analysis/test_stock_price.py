@@ -28,10 +28,10 @@ if __name__ == '__main__':
     df = add_moving_average_stock_price(df)
     
     # 2020/01/01以降のデータを抽出
-    df =df[df['日付'] >= datetime.datetime(2020,1,1)]
+    df = df['2020-01-01':]
     print(df.head())
     
     # 株価を折れ線グラフで可視化する
-    visualize_stock_price_in_line(df, show_average=True, filepath='jr_east_price.png')
+    visualize_stock_price_in_line(df, title='JR東日本', show_average=True, filepath='jr_east_price.png')
     
     

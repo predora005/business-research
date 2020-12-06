@@ -99,7 +99,11 @@ def astype_stock_price(df):
         else:
             dtypes[column] ='float64'
             
+    # データ型を変換
     new_df = df.astype(dtypes)
+    
+    # インデックスを日付に変更
+    new_df = new_df.set_index('日付')
     
     return new_df
 
@@ -125,7 +129,7 @@ def add_moving_average_stock_price(df):
 ##################################################
 # 株価を折れ線グラフで可視化する
 ##################################################
-def visualize_stock_price_in_line(df, show_average=False, filepath=None):
+def visualize_stock_price_in_line(df, title=None, show_average=False, filepath=None):
     """ 決算情報のうち指定した複数データを折れ線グラフで可視化する
     
     Args:
@@ -141,7 +145,7 @@ def visualize_stock_price_in_line(df, show_average=False, filepath=None):
     ax = fig.add_subplot(1,1,1)
     
     # 終値の折れ線グラフを追加
-    x = df['日付']
+    x = df.index
     y = df['終値']
     ax.plot(x, y, label='終値', linewidth=2.0)
     
@@ -149,7 +153,7 @@ def visualize_stock_price_in_line(df, show_average=False, filepath=None):
     if show_average:
         average_columns = ['5日移動平均', '25日移動平均', '75日移動平均']
         for column in average_columns:
-            x = df['日付']
+            x = df.index
             y = df[column]
             ax.plot(x, y, label=column, linewidth=1.0)
     
@@ -158,6 +162,10 @@ def visualize_stock_price_in_line(df, show_average=False, filepath=None):
     
     # 凡例を表示
     ax.legend()
+    
+    # グラフのタイトルを追加
+    if title is not None:
+        ax.set_title(title)
     
     # グラフを表示
     fig.show()
