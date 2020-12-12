@@ -240,7 +240,9 @@ def visualize_basic_info(df, columns, filepath):
     plt.tight_layout()
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     fig.savefig(filepath)
     
+    # グラフを閉じる
+    plt.close()
     

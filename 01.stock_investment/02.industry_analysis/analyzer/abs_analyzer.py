@@ -49,18 +49,21 @@ class AbsAnalyzer(metaclass=ABCMeta):
         """
         
         # 証券コードと名称のディクショナリを取得する
-        codes = self.get_codes()
+        codes = self._get_codes()
         
         # 各銘柄の基本情報を解析する。
-        self.analyze_basic_infos(codes)
+        self._analyze_basic_infos(codes)
         
         # 各銘柄の決算情報を解析する。
-        self.analyze_financial_infos(codes)
+        self._analyze_financial_infos(codes)
+        
+        # 各銘柄の株価を解析する。
+        self._analyze_stock_pricess(codes)
         
     ##################################################
     # 各銘柄の基本情報を取得する。
     ##################################################
-    def  analyze_basic_infos(self, codes):
+    def _analyze_basic_infos(self, codes):
         """ 各銘柄の基本情報を取得する。
         
         Args:
@@ -98,7 +101,7 @@ class AbsAnalyzer(metaclass=ABCMeta):
     ##################################################
     # 各銘柄の決算情報を取得する。
     ##################################################
-    def  analyze_financial_infos(self, codes):
+    def _analyze_financial_infos(self, codes):
         """ 各銘柄の決算情報を取得する。
         
         Args:
@@ -146,10 +149,42 @@ class AbsAnalyzer(metaclass=ABCMeta):
                 filepath=cf_file)
             
     ##################################################
+    # 各銘柄の株価を解析する。
+    ##################################################
+    def _analyze_stock_pricess(self, codes):
+        """ 各銘柄の株価を解析する。
+        
+        Args:
+            codes   (dict)  : 証券コードと名称のディクショナリ
+                              (ex){'JR東日本':9020, 'JR西日本': 9021}
+        Returns:
+        """
+        
+        # 株価取得の範囲(開始年, 終了年)を取得する
+        start_year, end_year = self._get_date_range_for_stock_price()
+        
+        # 指定した複数銘柄の株価を取得する
+        df = get_stock_prices(codes, start_year, end_year)
+        
+        # 銘柄名を取得する
+        brand_names = list(df.index.unique('銘柄'))
+        
+        # 複数銘柄の値上がり率を折れ線グラフで可視化する
+        ref_date = self._get_ref_date_for_price_rates()
+        price_rate_file = os.path.join(self._ouput_dir, 'stock_price_rate.png')
+        visualize_stock_price_rates_in_line(df, brand_names, ref_date=ref_date, filepath=price_rate_file)
+        
+        # 複数銘柄の株価を折れ線グラフで可視化する
+        start_date = self._get_stock_chart_start_date()
+        df2 = df.loc[pd.IndexSlice[:, start_date:], :]
+        stock_chart_file = os.path.join(self._ouput_dir, 'stock_chart.png')
+        visualize_multi_stock_prices_in_line(df2, brand_names, show_average=True, filepath=stock_chart_file)
+        
+    ##################################################
     # 証券コードと名称のディクショナリを返す。
     ##################################################
     @abstractmethod
-    def get_codes(self):
+    def _get_codes(self):
         """ 証券コードと名称のディクショナリを返す。
         
         Args:
@@ -159,3 +194,43 @@ class AbsAnalyzer(metaclass=ABCMeta):
         """
         raise NotImplementedError()
     
+    ##################################################
+    # 株価取得の範囲(開始年, 終了年)を取得する
+    ##################################################
+    @abstractmethod
+    def _get_date_range_for_stock_price(self):
+        """ 株価取得の範囲(開始年, 終了年)を取得する
+        
+        Args:
+        Returns:
+            tuple   : 開始年, 終了年
+        """
+        raise NotImplementedError()
+    
+    ##################################################
+    # 値上がり率の基準とする日付を取得する。
+    ##################################################
+    @abstractmethod
+    def _get_ref_date_for_price_rates(self):
+        """ 値上がり率の基準とする日付を取得する。
+        
+        Args:
+        Returns:
+            datetime    : 値上がり率の基準とする日付
+        """
+        raise NotImplementedError()
+    
+    ##################################################
+    # 株価チャート表示開始日付を取得する。
+    ##################################################
+    @abstractmethod
+    def _get_stock_chart_start_date(self):
+        """ 株価チャート表示開始日付を取得する。
+        
+        Args:
+        Returns:
+            string  : 株価チャート表示開始日付を下記形式の文字列で返す。
+                        (ex) 'YYYY-MM-DD'
+        """
+        raise NotImplementedError()
+        

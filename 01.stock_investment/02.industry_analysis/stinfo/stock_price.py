@@ -8,6 +8,7 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.dates as mdates
 
 ##############################
 # 指定した複数銘柄の株価を取得する
@@ -216,13 +217,15 @@ def visualize_stock_price_in_line(df, title=None, show_average=False, filepath=N
         ax.set_title(title)
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     
     # グラフをファイルに出力
     if filepath is not None:
         fig.savefig(filepath)
         
-
+    # グラフを閉じる
+    plt.close()
+    
 ##################################################
 # 複数銘柄の株価を折れ線グラフで可視化する
 ##################################################
@@ -293,12 +296,15 @@ def visualize_multi_stock_prices_in_line(df, brand_names, show_average=False, fi
     plt.tight_layout()
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     
     # グラフをファイルに出力
     if filepath is not None:
         fig.savefig(filepath)
         
+    # グラフを閉じる
+    plt.close()
+    
 ##################################################
 # 複数銘柄の値上がり率を折れ線グラフで可視化する
 ##################################################
@@ -308,7 +314,7 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
     Args:
         df          (DataFrame) : 複数銘柄の株価が格納されたデータフレーム
         brand_names (list)      : 可視化する銘柄名のリスト
-        ref_data    (datetime)  : 値上がり率の基準とする日付
+        ref_date    (datetime)  : 値上がり率の基準とする日付
         filepath    (string)    : 可視化したグラフを保存するファイルパス
     
     Returns:
@@ -317,18 +323,12 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
     # 基準日を設定
     if ref_date is None:
         ref_date = df.index.get_level_values('日付').min()
-    
-    # 期準備以降のデータを抽出
-    ref_date_str = ref_date.strftime('%04Y-%02m-%02d')  # 基準日
+    ref_date_str = ref_date.strftime('%04Y-%02m-%02d')  # 基準日の文字列表現
     
     # 値上がり率の列を追加
     df['値上がり率'] = np.nan
     
-    # FigureとAxesを取得
-    fig = plt.figure()
-    ax = fig.add_subplot(1,1,1)
-    
-    # 銘柄別に値上がり率を計算
+    # 値上がり率を計算し、DataFrameに追加する
     for brand_name in brand_names:
         
         # 指定銘柄のデータを取得
@@ -338,6 +338,41 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
         base_price = df_brand.loc[ref_date_str,'終値']  # 基準日の終値
         rate = df_brand['終値'] / base_price - 1        # 値上がり率
         
+        # 値上がり率をDataFrameに追加
+        df.loc[(brand_name, ), '値上がり率'] = rate.values
+        
+    
+    # X軸の表示範囲を設定
+    min_date = df.index.get_level_values('日付').min()
+    max_date = df.index.get_level_values('日付').max()
+    min_x = datetime.date(min_date.year, 1, 1)
+    max_x = datetime.date(max_date.year+1, 1, 1)
+    date_num = max_x.year - min_x.year + 1
+    
+    # 銘柄数
+    brand_num = len(brand_names)
+    
+    # figsize, rows, colsを取得
+    figsize, rows, cols = get_subplot_size(brand_num)
+    
+    # Figureを取得
+    fig = plt.figure(figsize=figsize)
+    
+    # 銘柄別に値上がり率を計算し表示
+    for i in range(brand_num):
+        
+        # Axesを取得
+        ax = fig.add_subplot(rows, cols, i+1)
+        
+        # 銘柄名
+        brand_name = brand_names[i]
+        
+        # 指定銘柄のデータを取得
+        df_brand = df.loc[brand_name,]
+        
+        # 値上がり率を取得
+        rate = df_brand['値上がり率']
+        
         # 表示するデータを抽出
         x = df_brand.index  # 日付
         y = rate
@@ -345,27 +380,39 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
         # 折れ線グラフを表示
         ax.plot(x, y, label=brand_name)
         
-        # 値上がり率をDataFrameに追加
-        df.loc[(brand_name, ), '値上がり率'] = rate.values
+        # 目盛り線を表示
+        ax.grid(color='gray', linestyle='--', linewidth=0.5)
+        
+        # 凡例を表示
+        #ax.legend()
+        
+        # Y軸の単位をパーセント表示に設定
+        ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(1))
+        
+        # X軸の目盛り個数を設定
+        ax.xaxis.set_major_locator(mpl.ticker.LinearLocator(date_num))
+        
+        # X軸の表示フォーマットを設定
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
-    # 目盛り線を表示
-    ax.grid(color='gray', linestyle='--', linewidth=0.5)
-    
-    # 凡例を表示
-    ax.legend()
-    
-    # Y軸の単位をパーセント表示に設定
-    ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(1))
-    
-    # グラフのタイトルを追加
-    ax.set_title('値上がり率')
+        # X軸の範囲を設定
+        ax.set_xlim(min_x, max_x) 
+        
+        # グラフのタイトルを追加
+        ax.set_title(brand_name)
+        
+    # 不要な余白を削る
+    plt.tight_layout()
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     
     # グラフをファイルに出力
     if filepath is not None:
         fig.savefig(filepath)  
+    
+    # グラフを閉じる
+    plt.close()
     
 ##################################################
 # 複数グラフ表示する際の各種サイズを返す

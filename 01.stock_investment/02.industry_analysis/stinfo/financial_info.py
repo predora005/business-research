@@ -363,8 +363,11 @@ def visualize_financial_info_in_bar(df, data_name, filepath):
     ax.legend(brand_names)
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     fig.savefig(filepath)
+    
+    # グラフを閉じる
+    plt.close()
     
 ##################################################
 # 決算情報のうち指定した複数データを
@@ -408,7 +411,6 @@ def visualize_financial_infos_in_line(df, data_names, filepath, from_zero=False)
         
     # Figurを取得
     fig = plt.figure(figsize=figsize)
-    #fig = plt.figure()
     
     # 指定した全データをデータ別に折れ線グラフで表示する
     for i in range(data_num):
@@ -449,8 +451,11 @@ def visualize_financial_infos_in_line(df, data_names, filepath, from_zero=False)
     plt.tight_layout()
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     fig.savefig(filepath)
+    
+    # グラフを閉じる
+    plt.close()
 
 ##############################
 # 決算情報のうちROEとROAを可視化する
@@ -503,9 +508,12 @@ def visualize_roe_roa(df, filepath):
     plt.tight_layout()
     
     # グラフを表示
-    fig.show()
+    #fig.show()
     fig.savefig(filepath)
-
+    
+    # グラフを閉じる
+    plt.close()
+    
 ##################################################
 # 決算情報のうち指定した１銘柄の指定データを可視化する
 ##################################################
@@ -599,12 +607,14 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     plt.title(brand_name)
 
     # グラフを表示
-    fig.show()
+    #fig.show()
     
     # グラフをファイルに出力
     if filepath is not None:
         fig.savefig(filepath)    
     
+    # グラフを閉じる
+    plt.close()
     
 ##################################################
 # 指定した列を可視化する際のY軸の表示範囲を取得する
