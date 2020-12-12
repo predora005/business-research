@@ -86,6 +86,10 @@ def get_financial_info(code):
     # DataFrameを結合する    
     df = pd.concat([fin_df1, fin_df2, cf_df], axis=1)
     
+    # ROAとROEを求める
+    df['ROA'] = df['純利益'] / df['総資産'] * 100
+    df['ROE'] = df['純利益'] / df['純資産'] * 100
+    
     return df
     
 ##############################
@@ -465,7 +469,7 @@ def visualize_roe_roa(df, filepath):
     data_names = ['ROE', 'ROA']
 
     # Figurを取得
-    fig = plt.figure(figsize=(10, 4))
+    fig = plt.figure(figsize=(9.6, 4.8))
 
     # 指定した全データをデータ別に折れ線グラフで表示する
     for i, data_name in enumerate(data_names):
