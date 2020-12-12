@@ -52,11 +52,10 @@ class AbsAnalyzer(metaclass=ABCMeta):
         codes = self.get_codes()
         
         # 各銘柄の基本情報を解析する。
-        #self.analyze_basic_infos(codes)
+        self.analyze_basic_infos(codes)
         
         # 各銘柄の決算情報を解析する。
         self.analyze_financial_infos(codes)
-        
         
     ##################################################
     # 各銘柄の基本情報を取得する。
@@ -114,25 +113,38 @@ class AbsAnalyzer(metaclass=ABCMeta):
         # 複数銘柄の決算情報を整形する
         df = reshape_financial_info(df)
         
-        # ROAとROEを可視化する
-        roa_roe_file = os.path.join(self._ouput_dir, 'roa_roe.png')
-        visualize_financial_infos_in_line(df, ['ROA', 'ROE'], roa_roe_file, from_zero=True)
-        
-        # キャッシュフロー情報を可視化する
-        cf_file = os.path.join(self._ouput_dir, 'cf.png')
-        visualize_financial_infos_in_line(df, ['営業CF(十億円)', '投資CF(十億円)', '財務CF(十億円)', '現金期末残高(十億円)'], cf_file, from_zero=False)
-        
-        # 資産を可視化する
-        assets_file = os.path.join(self._ouput_dir, 'assets.png')
-        visualize_financial_infos_in_line(df, ['純利益(十億円)', '総資産(十億円)', '純資産(十億円)'], assets_file, from_zero=True)
-        
-        # 利益を可視化する
-        income_file = os.path.join(self._ouput_dir, 'income.png')
-        visualize_financial_infos_in_line(df, ['売上高(十億円)', '営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], income_file, from_zero=True)
-        
-        
-        #visualize_financial_infos_in_line(df, ['自己資本率'], 'test1.png', from_zero=True)
-        
+        # 各銘柄別に可視化する
+        for brand_name in codes.keys():
+            
+            # 銘柄用のフォルダを作成
+            code = codes[brand_name]
+            dir_name = '{0:d}_{1:s}'.format(code, brand_name)
+            brand_dir = os.path.join(self._ouput_dir, dir_name)
+            os.makedirs(brand_dir, exist_ok=True)
+            
+            # ROAとROEを可視化する
+            roa_roe_file = os.path.join(brand_dir, 'roa_roe.png')
+            visualize_financial_info_for_specified_brand(
+                df, brand_name, bar_datas=['ROA', 'ROE'], filepath=roa_roe_file)
+            
+            # 利益を可視化する
+            income_file = os.path.join(brand_dir, 'income.png')
+            visualize_financial_info_for_specified_brand(
+                df, brand_name, bar_datas=['営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 
+                line_datas=['売上高(十億円)'], filepath=income_file)
+            
+            # 資産を可視化する
+            assets_file = os.path.join(brand_dir, 'assets.png')
+            visualize_financial_info_for_specified_brand(
+                df, brand_name, ['総資産(十億円)', '純資産(十億円)'], 
+                line_datas=['純利益(十億円)'], filepath=assets_file)
+            
+            # キャッシュフロー情報を可視化する
+            cf_file = os.path.join(brand_dir, 'cf.png')
+            visualize_financial_info_for_specified_brand(
+                df, brand_name, ['営業CF(十億円)', '投資CF(十億円)', '財務CF(十億円)', '現金期末残高(十億円)'], 
+                filepath=cf_file)
+            
     ##################################################
     # 証券コードと名称のディクショナリを返す。
     ##################################################

@@ -204,7 +204,7 @@ def visualize_basic_info(df, columns, filepath):
     """
     
     # FigureとAxesを取得
-    fig = plt.figure(figsize=(9.6, 4.8))
+    fig = plt.figure(figsize=(9.0, 5.4))
     ax = fig.add_subplot(1,1,1)
     
     # データ数を取得
