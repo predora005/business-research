@@ -166,6 +166,9 @@ class AbsAnalyzer(metaclass=ABCMeta):
         # 指定した複数銘柄の株価を取得する
         df = get_stock_prices(codes, start_year, end_year)
         
+        # 株価を補正する
+        df = self._correct_stock_prices(df)
+        
         # 銘柄名を取得する
         brand_names = list(df.index.unique('銘柄'))
         
@@ -233,4 +236,18 @@ class AbsAnalyzer(metaclass=ABCMeta):
                         (ex) 'YYYY-MM-DD'
         """
         raise NotImplementedError()
+        
+    ##################################################
+    # 株価を補正する。
+    ##################################################
+    @abstractmethod
+    def _correct_stock_prices(self, df):
+        """ 株価を補正する。
+            株式分割や併合に対する補正として使用する。
+        Args:
+            df(DataFrame)   : 株価データが格納されたDataFrame
+        Returns:
+            DataFrame   : 補正後のDataFrame
+        """
+        return df
         

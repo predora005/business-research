@@ -263,7 +263,8 @@ def visualize_multi_stock_prices_in_line(df, brand_names, show_average=False, fi
         y = df_brand['終値']
         
         # 折れ線グラフ表示
-        label = '{0:s}-終値'.format(brand_name)
+        #label = '{0:s}-終値'.format(brand_name)
+        label = '終値'
         ax.plot(x, y, label=label, linewidth=2.0)
         
         # 移動平均の折れ線グラフを追加
@@ -272,26 +273,19 @@ def visualize_multi_stock_prices_in_line(df, brand_names, show_average=False, fi
             for column in average_columns:
                 x = df_brand.index      # 日付
                 y = df_brand[column]    # 移動平均
-                label = '{0:s}-{1:s}'.format(brand_name, column)
+                #label = '{0:s}-{1:s}'.format(brand_name, column)
+                label = column
                 ax.plot(x, y, label=label, linewidth=1.0)
         
         # 目盛り線を表示
         ax.grid(color='gray', linestyle='--', linewidth=0.5)
         
-        # 軸ラベルをセット
-        #plt.xlabel(data_name, size=15)
-        
         # 凡例を表示
-        #ax.legend(brand_names)
         ax.legend()
         
         # グラフのタイトルを追加
         ax.set_title(brand_name)
         
-        # Y軸の表示範囲を設定
-        #if from_zero:
-        #    ax.set_ylim(ymin=0)
-    
     # 不要な余白を削る
     plt.tight_layout()
     
@@ -323,7 +317,7 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
     # 基準日を設定
     if ref_date is None:
         ref_date = df.index.get_level_values('日付').min()
-    ref_date_str = ref_date.strftime('%04Y-%02m-%02d')  # 基準日の文字列表現
+    base_ref_date_str = ref_date.strftime('%04Y-%02m-%02d')  # 基準日の文字列表現
     
     # 値上がり率の列を追加
     df['値上がり率'] = np.nan
@@ -333,6 +327,14 @@ def visualize_stock_price_rates_in_line(df, brand_names, ref_date=None, filepath
         
         # 指定銘柄のデータを取得
         df_brand = df.loc[brand_name,]
+        
+        # 基準日が存在しない(最近上場した等)場合は、
+        # 最旧日を基準日とする
+        if base_ref_date_str in df_brand.index:
+            ref_date_str = base_ref_date_str
+        else:
+            ref_date_tmp = df_brand.index.get_level_values('日付').min()
+            ref_date_str = ref_date_tmp.strftime('%04Y-%02m-%02d')
         
         # 値上がり率を計算
         base_price = df_brand.loc[ref_date_str,'終値']  # 基準日の終値
