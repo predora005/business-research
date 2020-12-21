@@ -517,14 +517,18 @@ def visualize_roe_roa(df, filepath):
 ##################################################
 # 決算情報のうち指定した１銘柄の指定データを可視化する
 ##################################################
-def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line_datas=None, filepath=None):
+def visualize_financial_info_for_specified_brand(
+        df, brand_name, bar_datas, bar_label=None, 
+        line_datas=None, line_label=None, filepath=None):
     """ 決算情報のうち指定した１銘柄の指定データを可視化する
     
     Args:
         df          (DataFrame) : 複数銘柄の基本情報が格納されたデータフレーム
         brand_name  (string)    : 可視化する銘柄の名称
         bar_datas   (list)      : 棒グラフで可視化する列名のリスト
+        bar_label   (string)    : 棒グラフの軸ラベル
         line_datas  (list)      : 折れ線グラフで可視化する列名のリスト
+        line_label  (string)    : 折れ線グラフの軸ラベル
         filepath    (string)    : 可視化したグラフを保存するファイルパス
     
     Returns:
@@ -572,6 +576,10 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
     ymin, ymax = get_yminmax_financial_info(brand_df, bar_datas)
     ax1.set_ylim(ymin=ymin*1.5, ymax=ymax*1.5)
     
+    # Y軸のラベルをセット
+    if bar_label is not None:
+        ax1.set_ylabel(bar_label)
+
     ########################################
     # 折れ線グラフの可視化処理
     ########################################
@@ -591,7 +599,11 @@ def visualize_financial_info_for_specified_brand(df, brand_name, bar_datas, line
         # Y軸の表示範囲を設定
         ymin, ymax = get_yminmax_financial_info(brand_df, line_datas)
         ax2.set_ylim(ymin=ymin*1.3, ymax=ymax*1.3)
-
+        
+        # Y軸のラベルをセット
+        if line_label is not None:
+            ax2.set_ylabel(line_label)
+    
     # 補助線を描画
     ax1.grid(axis='y', color='gray', ls='--')
     

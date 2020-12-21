@@ -128,24 +128,32 @@ class AbsAnalyzer(metaclass=ABCMeta):
             # ROAとROEを可視化する
             roa_roe_file = os.path.join(brand_dir, 'roa_roe.png')
             visualize_financial_info_for_specified_brand(
-                df, brand_name, bar_datas=['ROA', 'ROE'], filepath=roa_roe_file)
+                df, brand_name, bar_datas=['ROA', 'ROE'], bar_label='ROA,ROE[%]', 
+                filepath=roa_roe_file)
             
             # 利益を可視化する
             income_file = os.path.join(brand_dir, 'income.png')
             visualize_financial_info_for_specified_brand(
-                df, brand_name, bar_datas=['営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 
-                line_datas=['売上高(十億円)'], filepath=income_file)
+                df, brand_name, 
+                bar_datas=['営業利益(十億円)', '経常利益(十億円)', '純利益(十億円)'], 
+                bar_label='利益(十億円)',
+                line_datas=['売上高(十億円)'], line_label='売上高(十億円)',
+                filepath=income_file)
             
             # 資産を可視化する
             assets_file = os.path.join(brand_dir, 'assets.png')
             visualize_financial_info_for_specified_brand(
-                df, brand_name, ['総資産(十億円)', '純資産(十億円)'], 
-                line_datas=['純利益(十億円)'], filepath=assets_file)
+                df, brand_name, 
+                bar_datas=['総資産(十億円)', '純資産(十億円)'], bar_label='資産(十億円)',
+                line_datas=['純利益(十億円)'], line_label='利益(十億円)',
+                filepath=assets_file)
             
             # キャッシュフロー情報を可視化する
             cf_file = os.path.join(brand_dir, 'cf.png')
             visualize_financial_info_for_specified_brand(
-                df, brand_name, ['営業CF(十億円)', '投資CF(十億円)', '財務CF(十億円)', '現金期末残高(十億円)'], 
+                df, brand_name, 
+                bar_datas=['営業CF(十億円)', '投資CF(十億円)', '財務CF(十億円)', '現金期末残高(十億円)'], 
+                bar_label='キャッシュ(十億円)',
                 filepath=cf_file)
             
     ##################################################
