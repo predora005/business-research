@@ -21,7 +21,7 @@ if __name__ == '__main__':
     url = 'https://api.e-stat.go.jp/rest/3.0/app/json/getStatsList?'
     url += 'appId={0:s}&'.format(app_id) 
     url += 'statsNameList=Y&'
-    url += 'limit=5'
+    #url += 'limit=3'
     print(url)
     
     # 統計表情報取得
@@ -34,9 +34,23 @@ if __name__ == '__main__':
     print('==================================================')
     print(datalist)
     
-    # pandasのDataFrameに変換
-    df = pd.DataFrame(datalist)
+    # ディクショナリ形式にし、pandasのDataFrameに変換
     print('==================================================')
-    print(df.head())
+    dict_list = []
+    for data in datalist:
+        dict = {}
+        dict['id'] = data['STAT_NAME']['@code']
+        dict['name'] = data['STAT_NAME']['$']
+        dict['gov_code'] = data['GOV_ORG']['@code']
+        dict['gov_name'] = data['GOV_ORG']['$']
+        dict_list.append(dict)
+        print(dict)
+    
+    print('==================================================')
+    df = pd.DataFrame(dict_list)
+    print(df)
+    
+    # CSVファイルに出力
+    df.to_csv('list.csv')
     
     
