@@ -3,6 +3,9 @@
 import sys
 import requests
 import pandas as pd
+import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 ##################################################
 # 統計表情報取得
@@ -72,7 +75,7 @@ def get_meta_info(app_id, stats_data_id):
     url += 'statsDataId={0:s}&'.format(stats_data_id)
     url += 'explanationGetFlg=N&'   # 解説情報有無
     #url += 'limit=3'
-    print(url)
+    #print(url)
     
     # メタ情報取得
     json = requests.get(url).json()
@@ -81,7 +84,7 @@ def get_meta_info(app_id, stats_data_id):
     
     # メタ情報から各表のデータ部取得
     class_objs = json['GET_META_INFO']['METADATA_INF']['CLASS_INF']['CLASS_OBJ']
-    print('==================================================')
+    #print('==================================================')
     #print(class_objs)
     
     return class_objs
@@ -99,7 +102,7 @@ def get_stats_data_info(app_id, stats_data_id):
     url += 'explanationGetFlg=N&'   # 解説情報有無
     url += 'annotationGetFlg=N&'    # 注釈情報有無
     #url += 'limit=3'
-    print(url)
+    #print(url)
     
     # 統計データ取得
     json = requests.get(url).json()
@@ -120,25 +123,10 @@ def get_stats_data_info(app_id, stats_data_id):
     return df
     
 ##################################################
-# メイン
+# 統計データのカテゴリ要素をID(数字の羅列)から、
+# 意味がわかる名称に変更する
 ##################################################
-if __name__ == '__main__':
-    
-    # コマンドライン引数からアプリケーションID取得
-    if len(sys.argv) < 2:
-        print('Usage:')
-        print('  python3 {0:s} [appId]'.format(sys.argv[0]))
-        sys.exit(1)
-    app_id = sys.argv[1]
-    
-    # 統計表情報取得
-    #get_stats_list(app_id)
-    
-    # メタ情報取得
-    meta_info = get_meta_info(app_id, '0003411561')
-    
-    # 統計データ取得
-    stats_data = get_stats_data_info(app_id, '0003411561')
+def symbol_to_string(meta_info, stats_data):
     
     # 統計データのカテゴリ要素をID(数字の羅列)から、意味がわかる名称に変更する
     for class_obj in meta_info:
@@ -172,4 +160,73 @@ if __name__ == '__main__':
             
     stats_data.columns = new_columns
     
-    print(stats_data)
+    return stats_data
+    
+##################################################
+# 出生率と死亡率を折れ線グラフ表示
+##################################################
+def plot_birth_and_mortality_rate(df):
+    
+    # 日本語フォントの設定
+    mpl.font_manager._rebuild()    # キャッシュの削除
+    plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
+    
+    # 出生率と死亡率を取得する
+    birth_rate = df[df['人口動態総覧'] == '出生率']
+    mortality_rate = df[df['人口動態総覧'] == '死亡率']
+    
+    # 図と座標軸を取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 折れ線グラフをセット
+    ax.plot(birth_rate['年度'], birth_rate['値'], label='出生率(人口千対)')
+    ax.plot(mortality_rate['年度'], mortality_rate['値'], label='死亡率(人口千対)')
+    ymax = max( [birth_rate['値'].max(), mortality_rate['値'].max()] )
+    ax.set_ylim([0, ymax])
+    ax.legend()
+    
+    # 折れ線グラフを表示
+    fig.show()
+    fig.savefig('test.png')
+    
+##################################################
+# メイン
+##################################################
+if __name__ == '__main__':
+    
+    # コマンドライン引数からアプリケーションID取得
+    if len(sys.argv) < 2:
+        print('Usage:')
+        print('  python3 {0:s} [appId]'.format(sys.argv[0]))
+        sys.exit(1)
+    app_id = sys.argv[1]
+    
+    # 統計表情報取得
+    #get_stats_list(app_id)
+    
+    # メタ情報取得
+    meta_info = get_meta_info(app_id, '0003411561')
+    
+    # 統計データ取得
+    stats_data = get_stats_data_info(app_id, '0003411561')
+    
+    # 統計データのカテゴリ要素をID(数字の羅列)から、意味がわかる名称に変更する
+    stats_data = symbol_to_string(meta_info, stats_data)
+    #print(stats_data)
+    
+    # 時間軸(年次)を整数に変換
+    stats_data['年度'] = stats_data['時間軸(年次)'].map(lambda year: int(year.replace('年','')))
+
+    # 有効値以外をNaNに置換する
+    #   <NOTE char="***">調査又は集計していないもの</NOTE>
+    #   <NOTE char="-">計数のない場合</NOTE>
+    #   <NOTE char="・">統計項目のありえない場合</NOTE>
+    #   <NOTE char="…">計数不明の場合</NOTE>
+    stats_data['値'] = stats_data['値'].replace(['***', '-', '.', '…'], np.nan)
+    stats_data['値'] = stats_data['値'].astype(np.float64)
+     
+    # 出生率と死亡率を折れ線グラフ表示
+    plot_birth_and_mortality_rate(stats_data)
+    
+    
