@@ -54,8 +54,8 @@ def get_stats_list(app_id):
         dict_list.append(dict)
         #print(dict)
     
-    print('==================================================')
     df = pd.DataFrame(dict_list)
+    print('==================================================')
     print(df)
     
     # CSVファイルに出力
@@ -80,28 +80,11 @@ def get_meta_info(app_id, stats_data_id):
     #print(json)
     
     # メタ情報から各表のデータ部取得
-    classes = json['GET_META_INFO']['METADATA_INF']['CLASS_INF']['CLASS_OBJ']
-    #print('==================================================')
-    #print(classes)
-    
-    # Key:分類名、Value：項目名のリストのディクショナリを作成
-    class_dict = {}
-    for class_obj in classes:
-        class_name = class_obj['@name']
-        
-        # 分類内の項目をリストに追加
-        class_list = []
-        for item in class_obj['CLASS']:
-            item_name = item['@name']
-            class_list.append(item_name)
-        
-        # ディクショナリに追加
-        class_dict[class_name] = class_list
-    
+    class_objs = json['GET_META_INFO']['METADATA_INF']['CLASS_INF']['CLASS_OBJ']
     print('==================================================')
-    print(class_dict)
+    #print(class_objs)
     
-    return class_dict
+    return class_objs
     
 ##################################################
 # 統計データ取得
@@ -120,19 +103,19 @@ def get_stats_data_info(app_id, stats_data_id):
     
     # 統計データ取得
     json = requests.get(url).json()
-    print('==================================================')
+    #print('==================================================')
     #print(json)
     
     # 統計データからデータ部取得
     data = json['GET_STATS_DATA']['STATISTICAL_DATA']['DATA_INF']
-    print('==================================================')
+    #print('==================================================')
     #print(data)
     
     # jsonからDataFrameを作成
     values = data['VALUE']
     df = pd.DataFrame(values)
-    print('==================================================')
-    print(df)
+    #print('==================================================')
+    #print(df)
     
     return df
     
@@ -157,4 +140,36 @@ if __name__ == '__main__':
     # 統計データ取得
     stats_data = get_stats_data_info(app_id, '0003411561')
     
+    # 統計データのカテゴリ要素をID(数字の羅列)から、意味がわかる名称に変更する
+    for class_obj in meta_info:
     
+        # メタ情報の「@id」の先頭に'@'を付与'した文字列が、
+        # 統計データの列名と対応している
+        column_name = '@' + class_obj['@id']
+        
+        # 統計データの列名を「@code」から「@name」に置換するディクショナリを作成
+        id_to_name_dict = {}
+        for obj in class_obj['CLASS']:
+            id_to_name_dict[obj['@code']] = obj['@name']
+        
+        # ディクショナリを用いて、指定した列の要素を置換 
+        stats_data[column_name] = stats_data[column_name].replace(id_to_name_dict)
+    
+    # 統計データの列名を変換するためのディクショナリを作成
+    col_replace_dict = {'@unit': '単位', '$': '値'}
+    for class_obj in meta_info:
+        org_col = '@' + class_obj['@id']
+        new_col = class_obj['@name']
+        col_replace_dict[org_col] = new_col
+    
+    # ディクショナリに従って、列名を置換する
+    new_columns = []
+    for col in stats_data:
+        if col in col_replace_dict:
+            new_columns.append(col_replace_dict[col])
+        else:
+            new_columns.append(col)
+            
+    stats_data.columns = new_columns
+    
+    print(stats_data)
