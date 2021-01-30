@@ -76,18 +76,17 @@ def get_meta_info(app_id, stats_data_id):
     
     # メタ情報取得
     json = requests.get(url).json()
-    print('==================================================')
+    #print('==================================================')
     #print(json)
     
     # メタ情報から各表のデータ部取得
     classes = json['GET_META_INFO']['METADATA_INF']['CLASS_INF']['CLASS_OBJ']
-    print('==================================================')
+    #print('==================================================')
     #print(classes)
     
     # Key:分類名、Value：項目名のリストのディクショナリを作成
     class_dict = {}
     for class_obj in classes:
-        print(class_obj)
         class_name = class_obj['@name']
         
         # 分類内の項目をリストに追加
@@ -103,6 +102,39 @@ def get_meta_info(app_id, stats_data_id):
     print(class_dict)
     
     return class_dict
+    
+##################################################
+# 統計データ取得
+##################################################
+def get_stats_data_info(app_id, stats_data_id):
+
+    # 統計データ取得のURL
+    url = 'https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData?'
+    url += 'appId={0:s}&'.format(app_id) 
+    url += 'statsDataId={0:s}&'.format(stats_data_id)
+    url += 'metaGetFlg=N&'          # メタ情報有無
+    url += 'explanationGetFlg=N&'   # 解説情報有無
+    url += 'annotationGetFlg=N&'    # 注釈情報有無
+    #url += 'limit=3'
+    print(url)
+    
+    # 統計データ取得
+    json = requests.get(url).json()
+    print('==================================================')
+    #print(json)
+    
+    # 統計データからデータ部取得
+    data = json['GET_STATS_DATA']['STATISTICAL_DATA']['DATA_INF']
+    print('==================================================')
+    #print(data)
+    
+    # jsonからDataFrameを作成
+    values = data['VALUE']
+    df = pd.DataFrame(values)
+    print('==================================================')
+    print(df)
+    
+    return df
     
 ##################################################
 # メイン
@@ -123,6 +155,6 @@ if __name__ == '__main__':
     meta_info = get_meta_info(app_id, '0003411561')
     
     # 統計データ取得
-    #stats_data = get_stats_data_info(app_id, '0003411561')
+    stats_data = get_stats_data_info(app_id, '0003411561')
     
     
