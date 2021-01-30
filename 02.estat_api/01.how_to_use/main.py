@@ -22,33 +22,33 @@ def get_stats_list(app_id):
     #print(json)
     
     # 統計表情報から各表のデータ部取得
-    datalist = json['GET_STATS_LIST']['DATALIST_INF']['TABLE_INF']
+    tables = json['GET_STATS_LIST']['DATALIST_INF']['TABLE_INF']
     #print('==================================================')
     #print(datalist)
     
     # ディクショナリ形式にし、pandasのDataFrameに変換
     dict_list = []
-    for data in datalist:
+    for table in tables:
         #print('==================================================')
         #print(data)
         dict = {}
         
         # 統計表ID
-        dict['id'] = data['@id']
+        dict['id'] = table['@id']
         
         # 政府統計コードと統計名
-        dict['stat_id'] = data['STAT_NAME']['@code']
-        dict['stat_name'] = data['STAT_NAME']['$']
+        dict['stat_id'] = table['STAT_NAME']['@code']
+        dict['stat_name'] = table['STAT_NAME']['$']
         
         #タイトル
-        if '$' in data['TITLE']:
-            dict['title'] = data['TITLE']['$']
+        if '$' in table['TITLE']:
+            dict['title'] = table['TITLE']['$']
         else:
-            dict['title'] = data['TITLE']
+            dict['title'] = table['TITLE']
         
         # 担当機関
-        dict['gov_code'] = data['GOV_ORG']['@code']
-        dict['gov_name'] = data['GOV_ORG']['$']
+        dict['gov_code'] = table['GOV_ORG']['@code']
+        dict['gov_name'] = table['GOV_ORG']['$']
         
         # ディクショナリをリストに追加
         dict_list.append(dict)
@@ -64,20 +64,45 @@ def get_stats_list(app_id):
 ##################################################
 # メタ情報取得
 ##################################################
-def get_meta_info(app_id, stat_id):
+def get_meta_info(app_id, stats_data_id):
 
     # メタ情報取得のURL
     url = 'https://api.e-stat.go.jp/rest/3.0/app/json/getMetaInfo?'
     url += 'appId={0:s}&'.format(app_id) 
-    url += 'statsDataId={0:s}&'.format(stat_id)
-    url += 'explanationGetFlg=N&'
+    url += 'statsDataId={0:s}&'.format(stats_data_id)
+    url += 'explanationGetFlg=N&'   # 解説情報有無
     #url += 'limit=3'
     print(url)
     
-    # 統計表情報取得
+    # メタ情報取得
     json = requests.get(url).json()
     print('==================================================')
-    print(json)
+    #print(json)
+    
+    # メタ情報から各表のデータ部取得
+    classes = json['GET_META_INFO']['METADATA_INF']['CLASS_INF']['CLASS_OBJ']
+    print('==================================================')
+    #print(classes)
+    
+    # Key:分類名、Value：項目名のリストのディクショナリを作成
+    class_dict = {}
+    for class_obj in classes:
+        print(class_obj)
+        class_name = class_obj['@name']
+        
+        # 分類内の項目をリストに追加
+        class_list = []
+        for item in class_obj['CLASS']:
+            item_name = item['@name']
+            class_list.append(item_name)
+        
+        # ディクショナリに追加
+        class_dict[class_name] = class_list
+    
+    print('==================================================')
+    print(class_dict)
+    
+    return class_dict
     
 ##################################################
 # メイン
@@ -92,9 +117,12 @@ if __name__ == '__main__':
     app_id = sys.argv[1]
     
     # 統計表情報取得
-    get_stats_list(app_id)
+    #get_stats_list(app_id)
     
     # メタ情報取得
-    #get_meta_info(app_id, '0003288322')
+    meta_info = get_meta_info(app_id, '0003411561')
+    
+    # 統計データ取得
+    #stats_data = get_stats_data_info(app_id, '0003411561')
     
     
