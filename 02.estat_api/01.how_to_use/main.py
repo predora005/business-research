@@ -188,7 +188,42 @@ def plot_birth_and_mortality_rate(df):
     
     # 折れ線グラフを表示
     fig.show()
-    fig.savefig('test.png')
+    fig.savefig('birth_and_mortality_rate.png')
+    
+##################################################
+# 出生率・死亡率・自然増減率を折れ線グラフ表示
+##################################################
+def plot_birth_mortality_natural_id_rate(df):
+    
+    # 日本語フォントの設定
+    mpl.font_manager._rebuild()    # キャッシュの削除
+    plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
+    
+    # 出生率・死亡率・自然増減率を取得する
+    birth_rate = df[df['人口動態総覧'] == '出生率']
+    mortality_rate = df[df['人口動態総覧'] == '死亡率']
+    natutal_id_rate = df[df['人口動態総覧'] == '自然増減率']
+    
+    # 図と座標軸を取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 出生率・死亡率を第一軸にプロット
+    ax.plot(birth_rate['年度'], birth_rate['値'], label='出生率(人口千対)')
+    ax.plot(mortality_rate['年度'], mortality_rate['値'], label='死亡率(人口千対)')
+    ymax = max( [birth_rate['値'].max(), mortality_rate['値'].max()] )
+    ax.set_ylim([0, ymax])
+    ax.legend()
+    
+    # 自然増減率を第二軸にプロット
+    ax2 = ax.twinx()
+    ax2.plot(natutal_id_rate['年度'], natutal_id_rate['値'], 'C2', ls=':', label='自然増減率(人口千対)')
+    ax2.set_ylabel('自然増減率(人口千対)')
+    ax2.grid(axis='y', color='gray', ls=':')
+
+    # 折れ線グラフを表示
+    fig.show()
+    fig.savefig('birth_mortality_natural_id_rate.png')
     
 ##################################################
 # メイン
@@ -229,4 +264,6 @@ if __name__ == '__main__':
     # 出生率と死亡率を折れ線グラフ表示
     plot_birth_and_mortality_rate(stats_data)
     
+    # 出生率・死亡率・自然増減率を折れ線グラフ表示
+    plot_birth_mortality_natural_id_rate(stats_data)
     
