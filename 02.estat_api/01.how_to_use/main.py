@@ -188,7 +188,7 @@ def plot_birth_and_mortality_rate(df):
     
     # 折れ線グラフを表示
     fig.show()
-    fig.savefig('birth_and_mortality_rate.png')
+    fig.savefig('birth_mortality_rate.png')
     
 ##################################################
 # 出生率・死亡率・自然増減率を折れ線グラフ表示
@@ -224,6 +224,34 @@ def plot_birth_mortality_natural_id_rate(df):
     # 折れ線グラフを表示
     fig.show()
     fig.savefig('birth_mortality_natural_id_rate.png')
+    
+##################################################
+# 婚姻率と離婚率を折れ線グラフ表示
+##################################################
+def plot_marriage_and_divorce_rate(df):
+    
+    # 日本語フォントの設定
+    mpl.font_manager._rebuild()    # キャッシュの削除
+    plt.rcParams['font.family'] = 'IPAGothic'    # 日本語フォントを指定
+    
+    # 出生率と死亡率を取得する
+    marriage_rate = df[df['人口動態総覧'] == '婚姻率']
+    divorce_rate = df[df['人口動態総覧'] == '離婚率']
+    
+    # 図と座標軸を取得
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    
+    # 折れ線グラフをセット
+    ax.plot(marriage_rate['年度'], marriage_rate['値'], label='婚姻率(人口千対)')
+    ax.plot(divorce_rate['年度'], divorce_rate['値'], label='離婚率(人口千対)')
+    ymax = max( [marriage_rate['値'].max(), divorce_rate['値'].max()] )
+    ax.set_ylim([0, ymax])
+    ax.legend()
+    
+    # 折れ線グラフを表示
+    fig.show()
+    fig.savefig('marriage_divorce_rate.png')
     
 ##################################################
 # メイン
@@ -266,4 +294,7 @@ if __name__ == '__main__':
     
     # 出生率・死亡率・自然増減率を折れ線グラフ表示
     plot_birth_mortality_natural_id_rate(stats_data)
+    
+    # 結婚率と離婚率を折れ線グラフ表示
+    plot_marriage_and_divorce_rate(stats_data)
     
