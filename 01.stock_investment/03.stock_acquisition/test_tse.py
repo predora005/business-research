@@ -17,5 +17,5 @@ if __name__ == '__main__':
     
     # 東証一部銘柄の業界ごと株価上昇率を取得する
     df = get_tse1_increase_rate_by_industry(tse_brand_list, datetime.datetime(2021, 1, 4))
-    #print(df)
+    print(df)
     
