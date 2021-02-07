@@ -15,17 +15,21 @@ def get_tse_brand_list(filepath):
     return df
     
 ##############################
-# 東証一部銘柄の業界ごと株価上昇率を取得する
+# 東証銘柄の業界ごと株価上昇率を取得する
 ##############################
-def get_tse1_increase_rate_by_industry(brand_list, base_date):
-    
-    # 東証一部の銘柄を抽出
-    tse1 = brand_list[brand_list['市場・商品区分'] == '市場第一部（内国株）']
+def get_tse_increase_rate_by_industry(tse, base_date):
     
     # 33業種コード,33業種区分を抽出
-    industry_category = tse1['33業種区分'].unique()
+    industry_category = tse.groupby(['33業種コード','33業種区分']).groups.keys()
+    industry_category = [keys[1] for keys in industry_category]
+    #print("==================================================")
+    #print(industry_category)
     
-    # 変動率格納用のDataFrameを用意する
+    # 33業種コードでソートしたいので上記処理に変更
+    #industry_category = tse['33業種区分'].unique()
+    #industry_category.sort()
+
+    # 株価上昇率格納用のDataFrameを用意する
     df = None
     
     # 業種ごとに変動率を計算する
@@ -35,7 +39,7 @@ def get_tse1_increase_rate_by_industry(brand_list, base_date):
         #print(category)
         
         # 指定した業種の銘柄を抽出
-        brands = tse1[tse1['33業種区分'] == category]
+        brands = tse[tse['33業種区分'] == category]
         
         #print("==================================================")
         #print(brands)
@@ -72,8 +76,8 @@ def get_tse1_increase_rate_by_industry(brand_list, base_date):
         mean = category_df.mean(axis='columns')
         std = category_df.std(axis='columns')
         
-        #print("==================================================")
-        #print(category_df)
+        print("==================================================")
+        print(category_df)
         
         # DataFrameに上昇率と、上昇率の標準偏差を格納する
         if df is None:
