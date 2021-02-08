@@ -4,6 +4,9 @@
 import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+import matplotlib.dates as mdates
+import datetime
 
 ##############################
 # 東証上場銘柄一覧を取得
@@ -123,4 +126,113 @@ def get_tse_increase_rate_by_industry(tse, base_date):
                     columns=['33業種コード','33業種区分', 'コード', '銘柄名', '上昇率'])
     
     return category_df, brand_df
+    
+##############################
+# 東証銘柄の業界ごと株価上昇率を折れ線グラフで表示する
+##############################
+def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
+    
+    # 上昇率のみを抽出し、業種の数を取得する
+    increase_rate_df = category_df.loc[:, pd.IndexSlice[:, '上昇率']]
+    industry_num = len(increase_rate_df.columns)
+    
+    # figsize, rows, colsを取得し、Figureを取得
+    figsize, rows, cols = get_subplot_size(industry_num)
+    fig = plt.figure(figsize=figsize)
+    
+    # 月数を算出
+    min_date = increase_rate_df.index.min()
+    max_date = increase_rate_df.index.max()
+    min_x = datetime.date(min_date.year, min_date.month, 1)
+    max_x = datetime.date(max_date.year, max_date.month + 1, 1)
+    month_num = (max_x.year - min_x.year)*12 + max_x.month - min_x.month + 1
+    print(min_date, max_date, month_num)
+    
+    for i in range(industry_num):
+        
+        # Axesを取得
+        ax = fig.add_subplot(rows, cols, i+1)
+        
+        # 銘柄名
+        category_name = increase_rate_df.columns[i][0]
+        
+        # 上昇率を取得
+        increate_rate = increase_rate_df.loc[:, pd.IndexSlice[category_name, '上昇率']]
+        
+        # 表示するデータを抽出
+        x = increase_rate_df.index  # 日付
+        y = increate_rate
+        
+        # 折れ線グラフを表示
+        ax.plot(x, y, label=category_name)
+        
+        # 目盛り線を表示
+        ax.grid(color='gray', linestyle='--', linewidth=0.5)
+        
+        # Y軸の単位をパーセント表示に設定
+        #ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(1))
+        
+        # X軸の目盛り個数を設定
+        ax.xaxis.set_major_locator(mpl.ticker.LinearLocator(month_num))
+        
+        # X軸の表示フォーマットを設定
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        
+        # X軸の範囲を設定
+        ax.set_xlim(min_x, max_x) 
+        
+        # グラフのタイトルを追加
+        ax.set_title(category_name)
+        
+    # 不要な余白を削る
+    plt.tight_layout()
+    
+    # グラフを表示
+    #fig.show()
+    
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)  
+    
+    # グラフを閉じる
+    plt.close()
+
+##################################################
+# 複数グラフ表示する際の各種サイズを返す
+##################################################
+def get_subplot_size(plot_num):
+    """ 複数グラフ表示する際の各種サイズを返す
+    
+    Args:
+        plot_num     (int)  : 表示するグラフの個数
+
+    Returns:
+        figsize, rows, cols (int)
+    """
+    
+    # サブプロットの行数・列数を決定
+    if plot_num == 1:
+        rows, cols = (1, 1)
+        figsize=(6, 4)
+    elif plot_num == 2:
+        rows, cols = (1, 2)
+        figsize=(10, 4)
+    elif plot_num == 3:
+        rows, cols = (1, 3)
+        figsize=(15, 4)
+    elif plot_num == 4:
+        rows, cols = (2, 2)
+        figsize=(10, 8)
+    elif plot_num <= 6:
+        rows, cols = (2, 3)
+        figsize=(15, 8)
+    elif plot_num <= 9:
+        rows, cols = (3, 3)
+        figsize=(15, 12)
+    else:
+        rows, cols = (4, 4)
+        figsize=(20, 16)
+        
+        
+    return figsize, rows, cols
     
