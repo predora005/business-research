@@ -1,6 +1,6 @@
 # coding: utf-8
 
-#import numpy as np
+import numpy as np
 import pandas as pd
 import pandas_datareader.data as web
 import matplotlib.pyplot as plt
@@ -24,7 +24,6 @@ def get_tse_increase_rate_by_industry(tse, base_date):
     
     # 33業種コード,33業種区分を抽出
     industry_category = tse.groupby(['33業種コード','33業種区分']).groups.keys()
-    #industry_category = [keys[1] for keys in industry_category]
     #print("==================================================")
     #print(industry_category)
     
@@ -45,9 +44,6 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         category_code = category[0]     # 33業種コード
         category_class = category[1]    # 33業種区分
         
-        #print("==================================================")
-        #print(category)
-        
         # 指定した業種の銘柄を抽出
         brands = tse[tse['33業種区分'] == category_class]
         
@@ -58,7 +54,10 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         symbols = []
         for code in brands['コード']:
             symbols.append('{0:d}.JP'.format(code))
-        
+            
+        #print("==================================================")
+        #print(symbols)
+            
         # 指定銘柄コードの株価を取得する
         stock_price = web.DataReader(symbols, 'stooq', start=base_date)
         
@@ -68,9 +67,6 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         # 銘柄ごとに上昇率を計算し、ディショクナリに格納する
         dict = {}
         for symbol in symbols:
-            
-            #print("==================================================")
-            #print(symbol)
             
             # 銘柄ごとに上昇率を計算し、ディショクナリに格納する
             # 基準日付からの上昇率を計算する
@@ -86,8 +82,8 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         mean = df.mean(axis='columns')
         std = df.std(axis='columns')
         
-        print("==================================================")
-        print(df)
+        #print("==================================================")
+        #print(df)
         
         # DataFrameに業種単位の上昇率と、上昇率の標準偏差を格納する
         if category_df is None:
@@ -98,13 +94,13 @@ def get_tse_increase_rate_by_industry(tse, base_date):
             category_df[(category_class, '上昇率')] = mean
             category_df[(category_class, '標準偏差')] = std
             
-        print("==================================================")
-        print(category_df)
+        #print("==================================================")
+        #print(category_df)
         
         # 最新の日付を取得する
         latest_date = stock_price.index.max()
         latest_date_str = latest_date.strftime('%04Y-%02m-%02d')
-        print(latest_date_str)
+        #print(latest_date_str)
         
         # 銘柄単位の株価上昇率をディクショナリに格納する
         for i, symbol in enumerate(symbols):
@@ -117,8 +113,8 @@ def get_tse_increase_rate_by_industry(tse, base_date):
             brand_dict[brand_count] =  [category_code, category_class, code, name, increase_rate]
             brand_count += 1
             
-        print("==================================================")
-        print(brand_dict)
+        #print("==================================================")
+        #print(brand_dict)
         
     # 銘柄単位の株価上昇率を格納したDataFrameを作成する
     brand_df = pd.DataFrame.from_dict(
@@ -146,8 +142,8 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
     min_x = datetime.date(min_date.year, min_date.month, 1)
     max_x = datetime.date(max_date.year, max_date.month + 1, 1)
     month_num = (max_x.year - min_x.year)*12 + max_x.month - min_x.month + 1
-    print(min_date, max_date, month_num)
     
+    # 業種ごとに折れ線グラフを表示する
     for i in range(industry_num):
         
         # Axesを取得
@@ -160,7 +156,7 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
         increate_rate = increase_rate_df.loc[:, pd.IndexSlice[category_name, '上昇率']]
         
         # 表示するデータを抽出
-        x = increase_rate_df.index  # 日付
+        x = increase_rate_df.index
         y = increate_rate
         
         # 折れ線グラフを表示
@@ -197,6 +193,58 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
     # グラフを閉じる
     plt.close()
 
+##############################
+# 東証銘柄の業界ごと株価上昇率を棒グラフで表示する
+##############################
+def visualize_tse_increase_rate_by_industry_in_bar(category_df, filepath=None):
+    
+    # 最新の日付を取得する
+    latest_date = category_df.index.max()
+    latest_date_str = latest_date.strftime('%04Y-%02m-%02d')
+
+    # 上昇率, 標準偏差を抽出する
+    increase_rate = category_df.loc[latest_date_str, pd.IndexSlice[:, '上昇率']]
+    std = category_df.loc[latest_date_str, pd.IndexSlice[:, '標準偏差']]
+    
+    # 業種名をリストで取得
+    categories= [col[0] for col in increase_rate.columns]
+    
+    # 図と座標軸を取得
+    fig = plt.figure(10, 4)
+    ax = fig.add_subplot(1,1,1)
+    
+    # 棒グラフに表示するデータを準備
+    x = np.arange(len(categories))
+    y = increase_rate.values[0]
+    yerr = std.values[0]
+    
+    print('=========================')
+    print(category_df.columns)
+    print('=========================')
+    print(categories)
+    print('=========================')
+    print(x)
+    print('=========================')
+    print(y)
+    print('=========================')
+    print(yerr)
+    
+    # 棒グラフ表示
+    ax.bar(x, y, yerr=yerr, tick_label=categories)
+    
+    # 不要な余白を削る
+    plt.tight_layout()
+    
+    # グラフを表示
+    #fig.show()
+    
+    # グラフをファイルに出力
+    if filepath is not None:
+        fig.savefig(filepath)  
+    
+    # グラフを閉じる
+    plt.close()
+    
 ##################################################
 # 複数グラフ表示する際の各種サイズを返す
 ##################################################
