@@ -187,6 +187,9 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
         # グラフのタイトルを追加
         ax.set_title(category_name)
         
+    # 全サブプロット共通のタイトルを追加
+    plt.suptitle('業種ごとの株価上昇率')
+    
     # 不要な余白を削る
     plt.tight_layout()
     
@@ -231,13 +234,17 @@ def visualize_tse_increase_rate_by_industry_in_bar(category_df, filepath=None):
     x = np.arange(len(categories))
     y = df['上昇率']
     yerr = df['標準偏差']
+    label = df.index
     
     # 棒グラフ表示
-    ax.barh(x, y, xerr=yerr, tick_label=categories)
+    ax.barh(x, y, xerr=yerr, tick_label=label)
     
     # 目盛り線を表示
     ax.grid(axis='x', color='gray', linestyle='--', linewidth=0.5)
     
+    # グラフのタイトルを追加
+    ax.set_title('業種ごとの株価上昇率')
+        
     # 不要な余白を削る
     plt.tight_layout()
     
@@ -307,7 +314,7 @@ def get_subplot_size(plot_num):
         figsize=(20, 16)
     else:
         rows, cols = (7, 7)
-        figsize=(25, 24)
+        figsize=(25, 20)
         
         
     return figsize, rows, cols

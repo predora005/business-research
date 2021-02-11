@@ -57,4 +57,4 @@ if __name__ == '__main__':
     print(df_bottom10)
     df_bottom10.to_csv('topix500_brand_increase_rate_bottom10.csv')
     
-    # 
+    
