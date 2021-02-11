@@ -48,6 +48,7 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         brands = tse[tse['33業種区分'] == category_class]
         
         #print("==================================================")
+        print(category_code, category_class)
         #print(brands)
         
         # 銘柄コードの末尾に.JPを付加する
@@ -73,7 +74,7 @@ def get_tse_increase_rate_by_industry(tse, base_date):
             base_date_str = base_date.strftime('%04Y-%02m-%02d')
             base_price = stock_price.loc[base_date_str][('Close',symbol)]
             increase_rate = stock_price[('Close',symbol)] / base_price.iloc[0]
-            
+
             # ディクショナリに格納する
             dict[symbol] = increase_rate
             
@@ -98,7 +99,7 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         #print(category_df)
         
         # 最新の日付を取得する
-        latest_date = stock_price.index.max()
+        latest_date = df.index.max()
         latest_date_str = latest_date.strftime('%04Y-%02m-%02d')
         #print(latest_date_str)
         
@@ -110,7 +111,7 @@ def get_tse_increase_rate_by_industry(tse, base_date):
             increase_rate = df.loc[latest_date_str, symbol].iloc[0]
             
             # '33業種コード','33業種区分', 'コード', '銘柄名', '上昇率'])
-            brand_dict[brand_count] =  [category_code, category_class, code, name, increase_rate]
+            brand_dict[brand_count] = [category_code, category_class, code, name, increase_rate]
             brand_count += 1
             
         #print("==================================================")
@@ -137,12 +138,16 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
     fig = plt.figure(figsize=figsize)
     
     # 月数を算出
-    min_date = increase_rate_df.index.min()
-    max_date = increase_rate_df.index.max()
-    min_x = datetime.date(min_date.year, min_date.month, 1)
-    max_x = datetime.date(max_date.year, max_date.month + 1, 1)
-    month_num = (max_x.year - min_x.year)*12 + max_x.month - min_x.month + 1
+    #min_date = increase_rate_df.index.min()
+    #max_date = increase_rate_df.index.max()
+    #min_x = datetime.date(min_date.year, min_date.month, 1)
+    #max_x = datetime.date(max_date.year, max_date.month + 1, 1)
+    #month_num = (max_x.year - min_x.year)*12 + max_x.month - min_x.month + 1
     
+    # 上昇率の最大値と最小値を取得
+    min_y = increase_rate_df.min().min()
+    max_y = increase_rate_df.max().max()
+
     # 業種ごとに折れ線グラフを表示する
     for i in range(industry_num):
         
@@ -168,14 +173,16 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
         # Y軸の単位をパーセント表示に設定
         #ax.yaxis.set_major_formatter(mpl.ticker.PercentFormatter(1))
         
-        # X軸の目盛り個数を設定
-        ax.xaxis.set_major_locator(mpl.ticker.LinearLocator(month_num))
+        # X軸の目盛り位置を設定
+        ax.xaxis.set_major_locator(mdates.MonthLocator())
+        #ax.xaxis.set_major_locator(mpl.ticker.LinearLocator(month_num))
         
         # X軸の表示フォーマットを設定
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        #ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
         
-        # X軸の範囲を設定
-        ax.set_xlim(min_x, max_x) 
+        # X軸とY軸の範囲を設定
+        #ax.set_xlim(min_x, max_x) 
+        ax.set_ylim(min_y, max_y) 
         
         # グラフのタイトルを追加
         ax.set_title(category_name)
@@ -198,39 +205,38 @@ def visualize_tse_increase_rate_by_industry_in_line(category_df, filepath=None):
 ##############################
 def visualize_tse_increase_rate_by_industry_in_bar(category_df, filepath=None):
     
-    # 最新の日付を取得する
+    # 最新日付を取得する
     latest_date = category_df.index.max()
     latest_date_str = latest_date.strftime('%04Y-%02m-%02d')
-
-    # 上昇率, 標準偏差を抽出する
+    
+    # 最新日付の上昇率, 標準偏差を抽出する
     increase_rate = category_df.loc[latest_date_str, pd.IndexSlice[:, '上昇率']]
     std = category_df.loc[latest_date_str, pd.IndexSlice[:, '標準偏差']]
     
     # 業種名をリストで取得
     categories= [col[0] for col in increase_rate.columns]
     
+    # 上昇率と標準偏差を列にもつDataFrameを作成し、
+    # 上昇率で降順ソートする
+    df = pd.DataFrame({'上昇率': increase_rate.values[0], '標準偏差': std.values[0]}, 
+                        index=categories)
+    df = df.sort_values('上昇率', ascending=False)
+    print(df)
+    
     # 図と座標軸を取得
-    fig = plt.figure(10, 4)
+    fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(1,1,1)
     
     # 棒グラフに表示するデータを準備
     x = np.arange(len(categories))
-    y = increase_rate.values[0]
-    yerr = std.values[0]
-    
-    print('=========================')
-    print(category_df.columns)
-    print('=========================')
-    print(categories)
-    print('=========================')
-    print(x)
-    print('=========================')
-    print(y)
-    print('=========================')
-    print(yerr)
+    y = df['上昇率']
+    yerr = df['標準偏差']
     
     # 棒グラフ表示
-    ax.bar(x, y, yerr=yerr, tick_label=categories)
+    ax.barh(x, y, xerr=yerr, tick_label=categories)
+    
+    # 目盛り線を表示
+    ax.grid(axis='x', color='gray', linestyle='--', linewidth=0.5)
     
     # 不要な余白を削る
     plt.tight_layout()
@@ -244,6 +250,19 @@ def visualize_tse_increase_rate_by_industry_in_bar(category_df, filepath=None):
     
     # グラフを閉じる
     plt.close()
+    
+##############################
+# 東証銘柄の銘柄ごと株価上昇率の上位を取得する
+##############################
+def get_tse_top_increase_rate_by_brands(brand_df, top_num=5, bottom=False):
+    
+    # 上昇率でソート
+    df_sorted = brand_df.sort_values('上昇率', ascending=bottom)
+    
+    # 上位銘柄を抽出
+    df_top = df_sorted.head(top_num)
+    
+    return df_top
     
 ##################################################
 # 複数グラフ表示する際の各種サイズを返す
@@ -277,9 +296,18 @@ def get_subplot_size(plot_num):
     elif plot_num <= 9:
         rows, cols = (3, 3)
         figsize=(15, 12)
-    else:
+    elif plot_num <= 16:
         rows, cols = (4, 4)
+        figsize=(15, 12)
+    elif plot_num <= 25:
+        rows, cols = (5, 5)
         figsize=(20, 16)
+    elif plot_num <= 36:
+        rows, cols = (6, 6)
+        figsize=(20, 16)
+    else:
+        rows, cols = (7, 7)
+        figsize=(25, 24)
         
         
     return figsize, rows, cols
