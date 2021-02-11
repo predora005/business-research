@@ -27,7 +27,8 @@ if __name__ == '__main__':
     
     # TOPIX500銘柄の業界ごと株価上昇率を取得する
     category_df, brand_df = get_tse_increase_rate_by_industry(
-            topix500, datetime.datetime(2020, 1, 6))
+            topix500, datetime.datetime(2020, 11, 2), 
+            end_date=datetime.datetime(2021, 2, 5))
     
     # 株価上昇率をCSVファイルに出力する
     category_df.to_csv('topix500_category_increase_rate.csv')

@@ -20,7 +20,7 @@ def get_tse_brand_list(filepath):
 ##############################
 # 東証銘柄の業界ごと株価上昇率を取得する
 ##############################
-def get_tse_increase_rate_by_industry(tse, base_date):
+def get_tse_increase_rate_by_industry(tse, base_date, end_date=None):
     
     # 33業種コード,33業種区分を抽出
     industry_category = tse.groupby(['33業種コード','33業種区分']).groups.keys()
@@ -60,7 +60,7 @@ def get_tse_increase_rate_by_industry(tse, base_date):
         #print(symbols)
             
         # 指定銘柄コードの株価を取得する
-        stock_price = web.DataReader(symbols, 'stooq', start=base_date)
+        stock_price = web.DataReader(symbols, 'stooq', start=base_date, end=end_date)
         
         #print("==================================================")
         #print(stock_price)
