@@ -26,18 +26,18 @@ if __name__ == '__main__':
     print(category_count)
     
     # TOPIX500銘柄の業界ごと株価上昇率を取得する
-    #category_df, brand_df = get_tse_increase_rate_by_industry(
-    #        topix500, datetime.datetime(2020, 11, 2))
+    category_df, brand_df = get_tse_increase_rate_by_industry(
+            topix500, datetime.datetime(2020, 1, 6))
     
     # 株価上昇率をCSVファイルに出力する
-    #category_df.to_csv('topix500_category_increase_rate.csv')
-    #brand_df.to_csv('topix500_brand_increase_rate.csv')
+    category_df.to_csv('topix500_category_increase_rate.csv')
+    brand_df.to_csv('topix500_brand_increase_rate.csv')
     
-    category_df = pd.read_csv('topix500_category_increase_rate.csv', 
-                            header=[0,1], index_col=0, parse_dates=True)
-    brand_df = pd.read_csv('topix500_brand_increase_rate.csv',  
-                            header=0, index_col=0)
-    print(brand_df)
+    #category_df = pd.read_csv('topix500_category_increase_rate.csv', 
+    #                        header=[0,1], index_col=0, parse_dates=True)
+    #brand_df = pd.read_csv('topix500_brand_increase_rate.csv',  
+    #                        header=0, index_col=0)
+    #print(brand_df)
     
     # 業界ごと株価上昇率を折れ線グラフで可視化する
     visualize_tse_increase_rate_by_industry_in_line(
