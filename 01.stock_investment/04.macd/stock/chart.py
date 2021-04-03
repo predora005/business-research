@@ -18,7 +18,7 @@ def show_stock_chart1(df, figname=None):
 ##################################################
 # 株価チャートを表示する その2
 ##################################################
-def show_stock_chart2(df, title='', figname=None):
+def show_stock_chart2(df, title='', figpath=None):
     
     # 日付で昇順ソース
     df_sort = df.sort_index()
@@ -29,19 +29,19 @@ def show_stock_chart2(df, title='', figname=None):
     print(df_macd)
     
     # MACDとシグナルのプロット作成
-    add_plot = [mpf.make_addplot(df_macd['MACD'], color='r', panel=1, secondary_y=False),
-        mpf.make_addplot(df_macd['Signal'], color='b', panel=1, secondary_y=False),
+    add_plot = [mpf.make_addplot(df_macd['MACD'], color='m', panel=1, secondary_y=False),
+        mpf.make_addplot(df_macd['Signal'], color='c', panel=1, secondary_y=False),
         mpf.make_addplot(df_macd['Hist'], type='bar', color='g', panel=1, secondary_y=True)]
     
     # ロウソク足チャートを表示
     mpf.plot(df_sort, type='candle',
         mav=(5, 25 ,75), volume=True, addplot=add_plot, volume_panel=2, 
-        savefig=figname)
+        savefig=figpath)
     
 ##################################################
 # 株価チャートを表示する その3
 ##################################################
-def show_stock_chart3(df, title='', figname=None):
+def show_stock_chart3(df, title='', figpath=None):
     
     # 日付で昇順ソース
     df_sort = df.sort_index()
@@ -52,15 +52,15 @@ def show_stock_chart3(df, title='', figname=None):
     print(df_macd)
     
     # MACDとシグナルのプロット作成
-    add_plot = [mpf.make_addplot(df_macd['MACD'], color='r', panel=1, secondary_y=False),
-        mpf.make_addplot(df_macd['Signal'], color='b', panel=1, secondary_y=False),
-        mpf.make_addplot(df_macd['Hist'], type='bar', color='g', panel=1, secondary_y=True)]
+    add_plot = [mpf.make_addplot(df_macd['MACD'], color='m', panel=1, secondary_y=False),
+        mpf.make_addplot(df_macd['Signal'], color='c', panel=1, secondary_y=False, ylabel='MACD'),
+        mpf.make_addplot(df_macd['Hist'], type='bar', color='g', panel=1, secondary_y=True, ylabel='Hist')]
     
     # ロウソク足チャートを表示
     mpf.plot(df_sort, type='candle',
         mav=(5, 25 ,75), volume=True, addplot=add_plot, volume_panel=2, 
         title=title, figratio=(3, 2), panel_ratios=(6, 3, 2),
-        style='nightclouds', savefig=figname)
+        style='nightclouds', savefig=figpath)
     
 ##################################################
 # 終値の移動平均を追加する
