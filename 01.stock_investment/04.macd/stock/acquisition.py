@@ -11,7 +11,9 @@ def get_stock_prices(code, start_date, end_date=None):
 
     # 指定銘柄コードの株価を取得する
     stock_prices = web.DataReader(code, 'stooq', start=start_date, end=end_date)
-        
+    print('==========')
+    print(stock_prices)
+    
     return stock_prices
     
 ##################################################
@@ -28,8 +30,6 @@ def update_stock_prices(dirpath, code, start_date=None, end_date=None):
     if exist_file:
         # ファイルが存在すれば読み込む
         stored_df = read_stock_prices(dirpath, code)
-        print('==========')
-        print(stored_df)
         
         # 保存されたデータの期間を取得する
         latest_date = stored_df.index.max()
@@ -106,6 +106,7 @@ def __check_start_end_date(start_date, end_date, oldest_date, latest_date):
        
    # 日付の整合性をチェックする
    if start_date > end_date:
+       print(start_date, end_date)
        raise Exception('Invalid start_date > end_date')
    
    return start_date, end_date

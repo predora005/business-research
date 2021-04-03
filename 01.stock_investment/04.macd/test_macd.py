@@ -15,10 +15,9 @@ if __name__ == '__main__':
     
     # 銘柄コード
     code = '9020.JP'
+    #code = '9984.JP'
     dirpath = os.getcwd()
-    #start_date = datetime.datetime(2021, 2, 22)
-    #end_date = datetime.datetime(2021, 3, 10)
-    start_date = None
+    start_date = datetime.datetime(2021, 1, 1)
     end_date = None
     
     # 指定銘柄コードの株価を取得・更新する
@@ -26,3 +25,10 @@ if __name__ == '__main__':
     print('==========')
     print(df)
     
+    # ロウソク足チャートを表示
+    #show_stock_chart1(df, 'test.png')
+    #show_stock_chart2(df, title=code, figname='test.png')
+    show_stock_chart3(df, title=code, figname='test.png')
+    
+    # MACDを計算
+    df = df
