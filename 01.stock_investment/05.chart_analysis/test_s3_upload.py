@@ -34,8 +34,14 @@ if __name__ == '__main__':
     BUCKET_NAME = ''
     OBJECT_NAME1 = 'test/data_j.csv'
     FILE_NAME1 = 'data_j.csv'
+    OBJECT_NAME2 = 'test/PIL3.8.zip'
+    FILE_NAME2 = 'PIL3.8.zip'
+    OBJECT_NAME3 = 'test/test.txt'
+    FILE_NAME3 = 'text.txt'
     
     #upload_file(FILE_NAME1, BUCKET_NAME, object_name=None)
     upload_file(FILE_NAME1, BUCKET_NAME, OBJECT_NAME1)
     
     
+    s3 = boto3.resource('s3')
+    s3.Bucket('BUCKET_NAME').upload_file(OBJECT_NAME3, FILE_NAME3)
