@@ -26,6 +26,7 @@ if __name__ == '__main__':
     for obj in response['Contents']:
         print(obj['Key'])
         #print(obj)
+    """
     
     # Prefixで指定したオブジェクト表示(Resource)
     print('==============================')
@@ -34,7 +35,12 @@ if __name__ == '__main__':
     objects = bucket.objects.filter(Prefix='dir1/')
     for obj in objects:
         print(obj.key)
-        #print(obj)
+        print(obj.bucket_name)
+        print(obj.e_tag)
+        print(obj.last_modified)
+        print(obj.owner)
+        print(obj.size)
+        print(obj.storage_class)
     
     # Prefixで指定したオブジェクト表示(Client)
     print('==============================')
@@ -42,8 +48,9 @@ if __name__ == '__main__':
     response = s3.list_objects_v2(Bucket=BUCKET_NAME, Prefix='dir2/')
     for obj in response['Contents']:
         print(obj['Key'])
-        #print(obj)
+        print(obj)
     
+    """
     # バケット直下のオブジェクト表示(Resource)
     print('==============================')
     s3 = boto3.resource('s3')
@@ -51,14 +58,13 @@ if __name__ == '__main__':
     objects = bucket.objects.filter(Delimiter='/')
     for obj in objects:
         print(obj.key)
-
+    
     # バケット直下のオブジェクト表示(Client)
     print('==============================')
     s3 = boto3.client('s3')
     response = s3.list_objects_v2(Bucket=BUCKET_NAME, Delimiter='/')
     for obj in response['Contents']:
         print(obj['Key'])
-    """
     
     # Keyが1,000件以上ある場合の模擬(Resource)
     print('==============================')
@@ -100,3 +106,4 @@ if __name__ == '__main__':
         else:
             break
         
+    """
