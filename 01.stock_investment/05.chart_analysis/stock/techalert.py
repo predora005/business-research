@@ -4,6 +4,7 @@ import os
 import csv
 import pandas as pd
 from stock.file import *
+from stock.s3 import *
 
 ##############################
 # テクニカル指標分析によるアラートを出力する
@@ -23,24 +24,21 @@ def make_tech_alerts(df_value, dirpath, code):
         
     # テクニカル指標分析のファイルを読み込む
     df_analysis = pd.read_csv(filepath, header=0, index_col=0, parse_dates=[1])
-    #print("==========")
-    #print('[pd.read_csv]')
-    #print(df_analysis)
-
-    # MACDを分析
+    
+    # MACDの分析結果を追加
     df_analysis = analyze_macd(df_analysis, df_value, code)
     
-    # MACDヒストグラムを分析
+    # MACDヒストグラムの分析結果を追加
     df_analysis = analyze_hist(df_analysis, df_value, code)
-    #print("==========")
-    #print('[analyze_hist]')
-    #print(df_analysis)
     
-    # RSIを分析
+    # RSIの分析結果を追加
     df_analysis = analyze_rsi(df_analysis, df_value, code)
     
     # CSVファイルに保存する
     df_analysis.to_csv(filepath)
+    
+    # 保存したファイルをS3にアップロードする
+    s3_upload_analysis(dirpath, code)
     
 ##############################
 # MACDを分析する(ゴールデンクロスとデッドクロス)
@@ -68,14 +66,14 @@ def analyze_macd(df_analysis, df_value, code):
             details = f'{h1:.1f},{h2:.1f}'
             add_row = [date, code, ' MACD', 'ゴールデンクロス', details]
             add_rows.append(add_row)
-
+            
         elif (h1 > 0) and (h2 < 0):
             # デッドクロス
             date = dates[i]
             details = f'{h1:.1f},{h2:.1f}'
             add_row = [date, code, ' MACD', 'デッドクロス', details]
             add_rows.append(add_row)
-    
+            
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
     df_analysis = df_analysis.append(df_add_row, ignore_index=True)
@@ -93,7 +91,7 @@ def analyze_hist(df_analysis, df_value, code):
     
     # 空のリストを用意する
     add_rows = []
-
+    
     # 行数分ループ
     for i in range(2, hists.size):
         
@@ -107,26 +105,24 @@ def analyze_hist(df_analysis, df_value, code):
         diff2 = h3 - h2
         
         # 極大・極小を判定
-        if (diff1 < 0) and (diff2 > 0):
+        if (diff1 < 0) and (diff2 > 0) and (h3 < 0):
             # 極小
             date = dates[i]
             details = f'{h1:.1f},{h2:.1f},{h3:.1f}'
             add_row = [date, code, 'ヒスト', '極小', details]
             add_rows.append(add_row)
-            #print(add_row)
             
-        elif (diff1 > 0) and (diff2 < 0):
+        elif (diff1 > 0) and (diff2 < 0) and (h3 > 0):
             # 極大
             date = dates[i]
             details = f'{h1:.1f},{h2:.1f},{h3:.1f}'
             add_row = [date, code, 'ヒスト', '極大', details]
             add_rows.append(add_row)
-            #print(add_row)
-    
+            
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
     df_analysis = df_analysis.append(df_add_row, ignore_index=True)
-
+    
     return df_analysis
     
 ##############################
@@ -134,33 +130,26 @@ def analyze_hist(df_analysis, df_value, code):
 ##############################
 def analyze_rsi(df_analysis, df_value, code):
     
-    # ヒストグラムと日付を取り出す
-    rsis = df_value['RSI']
-    dates = df_value.index
-    
     # 空のリストを用意する
     add_rows = []
     
     # 行数分ループ
-    for i in range(0, rsis.size):
-        
-        # RSI取り出し
-        rsi = rsis.iloc[i]
+    for i, rsi in enumerate(df_value['RSI']):
         
         if rsi > 70:
             # 売りシグナル
-            date = dates[i]
-            details = f'{rsi}'
+            date = df_value.index[i]
+            details = f'{rsi:.1f}'
             add_row = [date, code, ' RSI', '売りシグナル', details]
             add_rows.append(add_row)
         
         elif rsi < 30:
             # 買いシグナル
-            date = dates[i]
-            details = f'{rsi}'
+            date = df_value.index[i]
+            details = f'{rsi:.1f}'
             add_row = [date, code, ' RSI', '買いシグナル', details]
             add_rows.append(add_row)
-
+    
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
     df_analysis = df_analysis.append(df_add_row, ignore_index=True)
@@ -168,8 +157,8 @@ def analyze_rsi(df_analysis, df_value, code):
     return df_analysis
     
 ##############################
-# CSVに出力項目(列)を取得する
+# CSVの出力項目(列)を取得する
 ##############################
 def __get_columns():
-    return ['日付', 'コード', '指標', 'アラート', '詳細']
+    return ['日付', '銘柄コード', '指標', 'アラート', '詳細']
     

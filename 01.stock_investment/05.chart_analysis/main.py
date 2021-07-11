@@ -17,7 +17,7 @@ if __name__ == '__main__':
     code = '9020.JP'
     #code = '9984.JP'
     dirpath = os.getcwd()
-    start_date = datetime.datetime(2021, 6, 1)
+    start_date = datetime.datetime(2021, 5, 1)
     end_date = None
     
     # 指定銘柄コードの株価を取得・更新する
@@ -36,6 +36,6 @@ if __name__ == '__main__':
     make_tech_alerts(df, dirpath, code)
     
     # ロウソク足チャートを保存
-    #save_stock_chart(df, dirpath, code)
+    save_stock_chart(df, dirpath, code)
     
     
