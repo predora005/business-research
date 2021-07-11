@@ -2,6 +2,7 @@
 
 import pandas_datareader.data as web
 from stock.file import *
+from stock.s3 import *
 import datetime
 
 ##############################
@@ -24,6 +25,10 @@ def update_stock_prices(dirpath, code, start_date=None, end_date=None):
     # ファイルの存在有無を取得する
     exist_file = isfile_stock_prices(dirpath, code)
     
+    # ファイルがローカルに存在しない場合、S3からダウンロードする
+    if not exist_file:
+        exist_file = s3_download_stock_prices(dirpath, code)
+    
     ##################################################
     # ファイルが存在する場合
     ##################################################
@@ -38,6 +43,7 @@ def update_stock_prices(dirpath, code, start_date=None, end_date=None):
         # 開始・終了日付の妥当性をチェックし補正して返す
         start_date, end_date = __check_start_end_date(start_date, end_date, oldest_date, latest_date)
         print('==========')
+        print('Date Check:')
         print(start_date, end_date)
         
         # 指定した銘柄コードの株価を取得する
@@ -53,11 +59,6 @@ def update_stock_prices(dirpath, code, start_date=None, end_date=None):
             else:
                 new_stored_df = pd.concat([df, stored_df])
                 
-        # 株価をファイルに保存する
-        save_stock_prices(dirpath, code, new_stored_df)
-        
-        return new_stored_df
-    
     ##################################################
     # ファイルが存在しない場合
     ##################################################
@@ -76,13 +77,17 @@ def update_stock_prices(dirpath, code, start_date=None, end_date=None):
             pass
         
         # 指定した銘柄コードの株価を取得する
-        df = get_stock_prices(code, start_date, end_date)
+        new_stored_df = get_stock_prices(code, start_date, end_date)
         
-        # 株価をファイルに保存する
-        save_stock_prices(dirpath, code, df)
         
-        return df
-        
+    # 株価をファイルに保存する
+    save_stock_prices(dirpath, code, new_stored_df)
+     
+    # 保存したファイルをS3にアップロードする
+    s3_upload_stock_prices(dirpath, code)
+      
+    return new_stored_df
+    
 ##################################################
 # 開始・終了日付の妥当性をチェックし補正して返す
 ##################################################

@@ -23,10 +23,10 @@ if __name__ == '__main__':
     # 指定銘柄コードの株価を取得・更新する
     df = update_stock_prices(dirpath, code, start_date, end_date)
     print('==========')
+    print('[main]')
     print(df)
     
-    # ロウソク足チャートを表示
-    figpath = os.path.join(dirpath, '{0:s}.png'.format(code))
-    show_stock_chart4(df, title=code, figpath=figpath)
+    # ロウソク足チャートを保存
+    save_stock_chart(df, dirpath, code)
     
     

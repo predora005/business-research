@@ -30,8 +30,8 @@ def add_rsi(df, start_date=None, end_date=None):
     
     # 株価の差分
     df_diff = df['Close'].diff()
-    print('==========')
-    print(df_diff)
+    #print('==========')
+    #print(df_diff)
     
     # 値上がり幅と値下がり幅を取得
     df_up, df_down = df_diff.copy(), df_diff.copy()
@@ -42,8 +42,8 @@ def add_rsi(df, start_date=None, end_date=None):
     # 14日間の単純移動平均
     sim14_up = df_up.rolling(window=14).mean()
     sim14_down = df_down.rolling(window=14).mean()
-    print('==========')
-    print(sim14_up)
+    #print('==========')
+    #print(sim14_up)
     
     # RSI
     df['RSI'] = sim14_up / (sim14_up + sim14_down) * 100
