@@ -65,7 +65,7 @@ def s3_upload_chart(dirpath, code):
 ##############################
 # テクニカル指標分析結果をS3にアップロードする
 ##############################
-def s3_upload_analysis(dirpath, code):
+def s3_upload_analysis(dirpath):
     
     # バケット名を取得
     bucket_name = __get_bucket_name()
@@ -74,7 +74,7 @@ def s3_upload_analysis(dirpath, code):
     file_name = get_tech_analyze_filename(dirpath)
     
     # S3上でのテクニカル指標分析結果ファイルのオブジェクト名を取得
-    object_name = __get_analysis_object_name(code)
+    object_name = __get_analysis_object_name()
     
     # S3にアップロード
     __upload(bucket_name, file_name, object_name)
@@ -110,7 +110,7 @@ def __get_chart_object_name(code):
 # テクニカル指標分析結果ファイルについて、
 # S3上でのオブジェクト名を取得する
 ##############################
-def __get_analysis_object_name(code):
+def __get_analysis_object_name():
     
     # ファイル名
     filename = 'tech_analyze.csv'

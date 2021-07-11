@@ -4,12 +4,13 @@ import os
 import csv
 import pandas as pd
 from stock.file import *
+from stock.techind import *
 from stock.s3 import *
 
 ##############################
 # テクニカル指標分析によるアラートを出力する
 ##############################
-def make_tech_alerts(df_value, dirpath, code):
+def make_tech_alerts(dirpath, codes):
     
     # テクニカル指標分析のファイル名称を取得する
     filepath = get_tech_analyze_filename(dirpath)
@@ -21,24 +22,37 @@ def make_tech_alerts(df_value, dirpath, code):
             header = ['']
             header.extend(__get_columns())
             writer.writerow(header)
-        
+    
     # テクニカル指標分析のファイルを読み込む
     df_analysis = pd.read_csv(filepath, header=0, index_col=0, parse_dates=[1])
+        
+    # 銘柄毎に分析を実施
+    for code in codes:
+        
+        # 株価保存ファイルを読み込む
+        df_value = read_stock_prices(dirpath, code)
+        
+        # テクニカル指標を追加する
+        df_value = add_technical_indicators(df_value)
+
+        # MACDの分析結果を追加
+        df_analysis = analyze_macd(df_analysis, df_value, code)
+        
+        # MACDヒストグラムの分析結果を追加
+        df_analysis = analyze_hist(df_analysis, df_value, code)
+        
+        # RSIの分析結果を追加
+        df_analysis = analyze_rsi(df_analysis, df_value, code)
+        
     
-    # MACDの分析結果を追加
-    df_analysis = analyze_macd(df_analysis, df_value, code)
-    
-    # MACDヒストグラムの分析結果を追加
-    df_analysis = analyze_hist(df_analysis, df_value, code)
-    
-    # RSIの分析結果を追加
-    df_analysis = analyze_rsi(df_analysis, df_value, code)
-    
-    # CSVファイルに保存する
+    # 日付順にソートする
+    df_analysis = df_analysis.sort_values(by=['Date', 'Code'], ignore_index=True)
+
+    # CSVファイルに更新する
     df_analysis.to_csv(filepath)
     
     # 保存したファイルをS3にアップロードする
-    s3_upload_analysis(dirpath, code)
+    s3_upload_analysis(dirpath)
     
 ##############################
 # MACDを分析する(ゴールデンクロスとデッドクロス)
@@ -160,5 +174,5 @@ def analyze_rsi(df_analysis, df_value, code):
 # CSVの出力項目(列)を取得する
 ##############################
 def __get_columns():
-    return ['日付', '銘柄コード', '指標', 'アラート', '詳細']
+    return ['Date', 'Code', 'Indicator', 'Alert', 'Details']
     
