@@ -24,6 +24,16 @@ def get_chart_filename(dirpath, code):
     return filepath
     
 ##############################
+# テクニカル指標分析のファイル名称を取得する
+##############################
+def get_tech_analyze_filename(dirpath):
+    
+    filename = 'tech_analyze.csv'
+    filepath = os.path.join(dirpath, filename)
+    
+    return filepath
+    
+##############################
 # 指定した銘柄コードの株価保存ファイルの存在有無を確認する
 ##############################
 def isfile_stock_prices(dirpath, code):

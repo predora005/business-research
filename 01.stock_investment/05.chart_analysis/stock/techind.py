@@ -1,6 +1,22 @@
 # coding: utf-8
 
 ##############################
+# テクニカル指標を追加する
+##############################
+def add_technical_indicators(df):
+    
+    # 日付で昇順ソース
+    df_sort = df.sort_index()
+    
+    # MACDを追加
+    df_macd = add_macd(df_sort)
+    
+    # RSIを追加
+    df_rsi = add_rsi(df_macd)
+    
+    return df_rsi
+    
+##############################
 # MACDとシグナルを追加する
 ##############################
 def add_macd(df, start_date=None, end_date=None):
@@ -42,9 +58,7 @@ def add_rsi(df, start_date=None, end_date=None):
     # 14日間の単純移動平均
     sim14_up = df_up.rolling(window=14).mean()
     sim14_down = df_down.rolling(window=14).mean()
-    #print('==========')
-    #print(sim14_up)
-    
+
     # RSI
     df['RSI'] = sim14_up / (sim14_up + sim14_down) * 100
     

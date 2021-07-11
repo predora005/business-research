@@ -10,29 +10,17 @@ from stock.s3 import *
 ##################################################
 def save_stock_chart(df, dirpath, code):
     
-    # 日付で昇順ソース
-    df_sort = df.sort_index()
-    
-    # MACDを追加
-    df_macd = add_macd(df_sort)
-    
-    # RSIを追加
-    df_rsi = add_rsi(df_macd)
-    print('==========')
-    print('[save_stock_chart]')
-    print(df_rsi)
-    
     # 保存先のファイルパスを作成
     figpath = get_chart_filename(dirpath, code)
     
     # すべてNaNの列が含まれるか確認
-    has_nan_column = df_rsi.isnull().all().any()
+    has_nan_column = df.isnull().all().any()
     
     # NaNの列が含まれる場合は最低限の情報のみ表示
     if has_nan_column:
-        save_stock_chart_minimum(df_rsi, figpath, title=code)
+        save_stock_chart_minimum(df, figpath, title=code)
     else:
-        save_stock_chart_all(df_rsi, figpath, title=code)
+        save_stock_chart_all(df, figpath, title=code)
     
     # 保存したファイルをS3にアップロードする
     s3_upload_chart(dirpath, code)

@@ -23,10 +23,19 @@ if __name__ == '__main__':
     # 指定銘柄コードの株価を取得・更新する
     df = update_stock_prices(dirpath, code, start_date, end_date)
     print('==========')
-    print('[main]')
+    print('[update_stock_prices]')
     print(df)
     
+    # テクニカル指標を追加する
+    df = add_technical_indicators(df)
+    print('==========')
+    print('[add_technical_indicators]')
+    print(df)
+    
+    # テクニカル指標分析によるアラートを出力する
+    make_tech_alerts(df, dirpath, code)
+    
     # ロウソク足チャートを保存
-    save_stock_chart(df, dirpath, code)
+    #save_stock_chart(df, dirpath, code)
     
     
