@@ -14,11 +14,11 @@ if __name__ == '__main__':
     plt_font_init()
     
     # 銘柄コード
-    codes = ['9020.JP', '9984.JP', '2193.JP']
+    codes = ['9020.JP', '9984.JP', '2193.JP', '3402.JP']
     dirpath = os.getcwd()
     
     # 取得開始日と終了日
-    start_date = datetime.datetime(2021, 5, 1)
+    start_date = datetime.datetime(2021, 4, 1)
     end_date = None
     
     # 各銘柄の株価取得・チャート作成を実行する

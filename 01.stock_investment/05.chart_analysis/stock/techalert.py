@@ -34,17 +34,16 @@ def make_tech_alerts(dirpath, codes):
         
         # テクニカル指標を追加する
         df_value = add_technical_indicators(df_value)
-
+        
         # MACDの分析結果を追加
         df_analysis = analyze_macd(df_analysis, df_value, code)
         
         # MACDヒストグラムの分析結果を追加
-        df_analysis = analyze_hist(df_analysis, df_value, code)
+        df_analysis = analyze_hist_5days(df_analysis, df_value, code)
         
         # RSIの分析結果を追加
         df_analysis = analyze_rsi(df_analysis, df_value, code)
         
-    
     # 日付順にソートする
     df_analysis = df_analysis.sort_values(by=['Date', 'Code'], ignore_index=True)
 
@@ -67,26 +66,28 @@ def analyze_macd(df_analysis, df_value, code):
     add_rows = []
     
     # 行数分ループ
-    for i in range(1, hists.size):
+    for i in range(0, hists.size-1):
         
         # 2日分取り出し
-        h1 = hists.iloc[i-1]
-        h2 = hists.iloc[i]
+        h1 = hists.iloc[i]
+        h2 = hists.iloc[i+1]
         
         # ゴールデンクロス・デッドクロスを判定
-        if (h1 < 0) and (h2 > 0):
+        if h1 < 0 < h2:
             # ゴールデンクロス
-            date = dates[i]
+            date = dates[i+1]
             details = f'{h1:.1f},{h2:.1f}'
             add_row = [date, code, ' MACD', 'ゴールデンクロス', details]
             add_rows.append(add_row)
+            #print(f'{dates[i+1]:%Y-%m-%d} {code} ゴールデンクロス {h1:.1f},{h2:.1f}')
             
-        elif (h1 > 0) and (h2 < 0):
+        elif h1 > 0 > h2:
             # デッドクロス
-            date = dates[i]
+            date = dates[i+1]
             details = f'{h1:.1f},{h2:.1f}'
             add_row = [date, code, ' MACD', 'デッドクロス', details]
             add_rows.append(add_row)
+            #print(f'{dates[i+1]:%Y-%m-%d} {code} デッドクロス {h1:.1f},{h2:.1f}')
             
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
@@ -95,9 +96,9 @@ def analyze_macd(df_analysis, df_value, code):
     return df_analysis
     
 ##############################
-# MACDヒストグラムを分析する
+# MACDヒストグラムを分析する(3日間の上昇・減少で判定)
 ##############################
-def analyze_hist(df_analysis, df_value, code):
+def analyze_hist_3days(df_analysis, df_value, code):
     
     # ヒストグラムと日付を取り出す
     hists = df_value['Hist']
@@ -107,31 +108,82 @@ def analyze_hist(df_analysis, df_value, code):
     add_rows = []
     
     # 行数分ループ
-    for i in range(2, hists.size):
+    for i in range(0, hists.size-3):
         
         # 3日分取り出し
-        h1 = hists.iloc[i-2]
-        h2 = hists.iloc[i-1]
-        h3 = hists.iloc[i]
+        h3d = hists.iloc[i:i+3]
         
-        # 日毎の差分を計算
-        diff1 = h2 - h1
-        diff2 = h3 - h2
+        # 日毎の差分を取得
+        hdiff = h3d.diff()
         
-        # 極大・極小を判定
-        if (diff1 < 0) and (diff2 > 0) and (h3 < 0):
-            # 極小
-            date = dates[i]
-            details = f'{h1:.1f},{h2:.1f},{h3:.1f}'
-            add_row = [date, code, 'ヒスト', '極小', details]
+        # ボトムアウト・ピークアウトを判定
+        if (hdiff[1] < 0 < hdiff[2]) and (h3d[1] < 0):
+            # ボトムアウト
+            date = dates[i+1]
+            details = f'{h3d[0]:.1f},{h3d[1]:.1f},{h3d[2]:.1f}'
+            add_row = [date, code, 'ヒスト', 'ボトムアウト', details]
             add_rows.append(add_row)
+            hist_values = f'{h3d[0]:.1f},{h3d[1]:.1f},{h3d[2]:.1f}'
+            #print(f'{dates[i+1]:%Y-%m-%d} {code} ボトムアウト {hist_values}')
             
-        elif (diff1 > 0) and (diff2 < 0) and (h3 > 0):
-            # 極大
-            date = dates[i]
-            details = f'{h1:.1f},{h2:.1f},{h3:.1f}'
-            add_row = [date, code, 'ヒスト', '極大', details]
+        elif (hdiff[1] > 0 > hdiff[2]) and (h3d[1] > 0):
+            # ピークアウト
+            date = dates[i+1]
+            details = f'{h3d[0]:.1f},{h3d[1]:.1f},{h3d[2]:.1f}'
+            add_row = [date, code, 'ヒスト', 'ピークアウト', details]
             add_rows.append(add_row)
+            hist_values = f'{h3d[0]:.1f},{h3d[1]:.1f},{h3d[2]:.1f}'
+            #print(f'{dates[i+1]:%Y-%m-%d} {code} ピークアウト {hist_values}')
+            
+    # 元のDataFrameに分析結果を追加する
+    df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
+    df_analysis = df_analysis.append(df_add_row, ignore_index=True)
+    
+    return df_analysis
+    
+##############################
+# MACDヒストグラムを分析する(5日間の上昇・減少で判定)
+##############################
+def analyze_hist_5days(df_analysis, df_value, code):
+    
+    # ヒストグラムと日付を取り出す
+    hists = df_value['Hist']
+    dates = df_value.index
+    
+    # 空のリストを用意する
+    add_rows = []
+    
+    # 行数分ループ
+    for i in range(0, hists.size-5):
+        
+        # 5日分取り出し
+        h5d = hists.iloc[i:i+5]
+        
+        # 日毎の差分を取得
+        hdiff = h5d.diff()
+        
+        # ボトムアウト・ピークアウトを判定
+        if (hdiff[1] < 0) and (hdiff[2] < 0) and \
+            (hdiff[3] > 0) and (hdiff[4] > 0) and \
+            (h5d[2] < 0):
+            # ボトムアウト
+            date = dates[i+2]
+            details = f'{h5d[0]:.1f},{h5d[1]:.1f},{h5d[2]:.1f},{h5d[3]:.1f},{h5d[4]:.1f}'
+            add_row = [date, code, 'ヒスト', 'ボトムアウト', details]
+            add_rows.append(add_row)
+            hist_values = f'{h5d[0]:.1f},{h5d[1]:.1f},{h5d[2]:.1f},{h5d[3]:.1f},{h5d[4]:.1f}'
+            #print(f'{dates[i+2]:%Y-%m-%d} {code} ボトムアウト {hist_values}')
+            
+        elif (hdiff[1] > 0) and (hdiff[2] > 0) and \
+            (hdiff[3] < 0) and (hdiff[4] < 0) and \
+            (h5d[2] > 0):
+            # ピークアウト
+            date = dates[i+2]
+            details = f'{h5d[0]:.1f},{h5d[1]:.1f},{h5d[2]:.1f},{h5d[3]:.1f},{h5d[4]:.1f}'
+            add_row = [date, code, 'ヒスト', 'ピークアウト', details]
+            add_rows.append(add_row)
+            hist_values = f'{h5d[0]:.1f},{h5d[1]:.1f},{h5d[2]:.1f},{h5d[3]:.1f},{h5d[4]:.1f}'
+            #print(f'{dates[i+2]:%Y-%m-%d} {code} ピークアウト {hist_values}')
             
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
@@ -154,15 +206,17 @@ def analyze_rsi(df_analysis, df_value, code):
             # 売りシグナル
             date = df_value.index[i]
             details = f'{rsi:.1f}'
-            add_row = [date, code, ' RSI', '売りシグナル', details]
+            add_row = [date, code, ' RSI', '70%以上', details]
             add_rows.append(add_row)
+            #print(f'{df_value.index[i]} RSI>70% {rsi:.1f}')
         
         elif rsi < 30:
             # 買いシグナル
             date = df_value.index[i]
             details = f'{rsi:.1f}'
-            add_row = [date, code, ' RSI', '買いシグナル', details]
+            add_row = [date, code, ' RSI', '30%以下', details]
             add_rows.append(add_row)
+            #print(f'{df_value.index[i]} RSI<30% {rsi:.1f}')
     
     # 元のDataFrameに分析結果を追加する
     df_add_row = pd.DataFrame(add_rows, columns=__get_columns())
