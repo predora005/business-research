@@ -14,7 +14,10 @@ if __name__ == '__main__':
     plt_font_init()
     
     # 銘柄コード
-    codes = ['9020.JP', '9984.JP', '2193.JP', '3402.JP']
+    # codes = ['9020.JP', '9984.JP', '2193.JP', '3402.JP']
+    # 9020.JP:JR東日本、9984.JP:ソフトバンク、2193.JP:クックパッド、3402.JP：東レ
+    # codes = ['VOO', 'VT', 'VTI']
+    codes = ['GOOGL', 'AAPL', 'FB', 'AMZN', 'MSFT']
     dirpath = os.getcwd()
     
     # 取得開始日と終了日
